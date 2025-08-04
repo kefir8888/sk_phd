@@ -8,7 +8,9 @@
 % DRAFT MODE uses simpler front page, without dedication, acknowledgements, uses a footer sying draft.
 %\documentclass[12pt,a4paper,vi,twoside,leftblank]{sk-thesis}
 %\documentclass[12pt,a4paper,vi,draft]{sk-thesis}
+
 \documentclass[12pt,a4paper,vi]{sk-thesis}
+
 \usepackage[utf8]{inputenc}
 \usepackage{geometry}
 \geometry{a4paper, right=30mm, bottom=30mm, left=30mm, top=30mm}
@@ -28,6 +30,17 @@
 \usepackage{natbib, breakcites}
 \usepackage{bibentry}
 \usepackage{doi}
+%\usepackage[ruled]{algorithm2e}
+\usepackage[ruled,vlined]{algorithm2e}
+\SetKw{KwBy}{by}
+
+\usepackage{etoolbox}
+\apptocmd{\sloppy}{\hbadness 10000\relax}{}{}
+
+%\def\tableheadsize{\@setfontsize{\tableheadsize}{8}{9pt}}
+%\def\tablesubheadsize{\@setfontsize{\tablesubheadsize}{7.56}{8pt}}
+%\def\tablesize{\@setfontsize{\tablesize}{8.04}{12pt}}
+
 \definecolor{navyblue}{rgb}{0.0, 0.0, 0.5}
 %\definecolor{royalblue}{rgb}{0.06, 0.11, 0.42}
 \hypersetup{
@@ -39,7 +52,12 @@
 }
 \usepackage{cleveref}
 \crefformat{footnote}{#2\footnotemark[#1]#3}
+
+\usepackage{silence}
+\WarningsOff[catoptions]
 \usepackage{catoptions}
+\WarningFilter{latex}{`h' float specifier changed to `ht'}
+
 \input{Autoref.tex}
 \usepackage{textcomp}
 \usepackage{fancyhdr}
@@ -53,8 +71,8 @@
 %\fancyhead[RE]{}
 %\fancyhead[RO]{\slshape \leftmark} % chapter
 %\fancyhead[LO]{}
-\fancyhead[LE,RO]{\changefont \slshape \nouppercase{\rightmark}} %section
-\fancyhead[RE,LO]{\changefont \slshape \nouppercase{\leftmark}} %chapter
+%\fancyhead[LE,RO]{\changefont \slshape \nouppercase{\rightmark}} %section
+%\fancyhead[RE,LO]{\changefont \slshape \nouppercase{\leftmark}} %chapter
 \fancyfoot[C]{\thepage} %footer
 \usepackage{datetime}
 \usepackage[automake,toc]{glossaries}
@@ -127,19 +145,20 @@
     }
     \pagestyle{fancy}
 }
+
 \include{contents}
 \include{chapters/introduction}
 \include{chapters/background}
-\include{chapters/thesis-objectives}
-\include{chapters/robot}
+%\include{chapters/thesis-objectives}
 \include{chapters/volume_estimation}
 \include{chapters/disease_detection}
+\include{chapters/robot}
 \include{chapters/conclusion}
 \include{glossary}
 \include{bibliography}
 
-\appendix
-\include{chapters/appendix-a}
+%\appendix
+%\include{chapters/appendix-a}
 
 \end{document}
 

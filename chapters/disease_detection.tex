@@ -5,31 +5,91 @@ Let me introduce to the topic of my PhD work at \acrfull{sk}.
 \todo[inline]{TODO: complete chapter}
 
 \section{Thesis Structure}
-The diagram in \autoref{fig:thesis-structure} illustrates the flow of information through the structure of the thesis.
+%The diagram in \autoref{fig:thesis-structure} illustrates the flow of information through the structure of the thesis.
 
-\begin{figure}[htb!]
-\centering \includegraphics[width=0.5\textwidth]{graphics/thesis-structure}
-\caption{Thesis structure}
-\label{fig:thesis-structure}
-\end{figure}
+% \begin{figure}[htb!]
+% \centering \includegraphics[width=0.5\textwidth]{graphics/thesis-structure}
+% \caption{Thesis structure}
+% \label{fig:thesis-structure}
+% \end{figure}
 
-\begin{description}
-    \item[\Autoref{cap:background} - Background]
-Here's the literature review.
+% \begin{description}
+%     \item[\Autoref{cap:background} - Background]
+% Here's the literature review.
 
-    \item[\Autoref{cap:thesis_objectives} - Thesis Objectives]
-We define the objectives of our work.
+%     \item[\Autoref{cap:thesis_objectives} - Thesis Objectives]
+% We define the objectives of our work.
 
-...
+% ...
 
-    \item[\Autoref{cap:conclusion} - Conclusion]
-In the last chapter, we discuss our results obtained ...
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     \item[\Autoref{cap:conclusion} - Conclusion]
+% In the last chapter, we discuss our results obtained ...
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Let me introduce to the topic of my PhD 
+
+Design, manufacturing and developing software for an omnidirectional agricultural robot.
+
+The solution comes in the form of a 4-wheeled robot 
+
+The proposed solution comprises the following modules:
+
+\begin{itemize}
+    \item chassis
+    \item wheel base
+    \item electrics
+    \item sensing, computation and communication
+    \item software
+\end{itemize}
+
+The software could in turn be broken down into the following:
+
+\begin{itemize}
+    \item data transport
+    \item localization
+    \item target CV problem
+    \item logging and data representation
+    \item path planning
+    \item user interface
+\end{itemize}
+
+Let us describe each of the elements of the system in detail.
+
+chassis
+
+The main structural elements of the robot's frame are manufactured from the aluminum profile (tube with rectangular cross-section).
+They were designed to withstand the loads that exceed the normal ones with a huge margin.
+The rigidity is assured by a rectangular section of a composite material (alucobond) that separates the inner volume of the robot into two.
+The tubes were connected by flat milled aluminum elements.
+The assembly was performed using bolts and nuts, as well as rivets and bits of welding.
+The total weight of the chassis if N \si{kg}.
+
+wheel base
+
+The wheels were designed to work in pairs: each omnidirectional wheel is mechanically coupled with a rail wheel
+
+electrics
+
+sensing, computation and communication
+
+software
+
+data transport
+
+localization
+
+target CV problem
+
+logging and data representation
+
+path planning
+
+user interface
 
 % =======================================================
 %# Modern greenhouses #
@@ -67,7 +127,7 @@ Thus, the development of the powdery mildew is rapid, taking 4 to 7 days to prog
     \centering
     %\begin{subfigure}{0.48\textwidth}
     %    \centering
-        \includegraphics[width=0.48\textwidth]{gfx/images/greenhouse/greenhouse_top_view_fixed-2.png}
+        \includegraphics[width=0.8\textwidth]{images/greenhouse_top_view_fixed-2.png}
         \caption{Image taken in a greenhouse at the top of the plants.}
         \label{fig_greenhouse_top_view}
     %\end{subfigure}
@@ -117,7 +177,7 @@ The contributions of this paper are as follows:
     \item Roboticised data acquisition was performed. Namely, a robot was designed and manufactured, and a dataset of powdery mildew-infected tomato leaves was gathered. The data collection was performed in a real environment under varying lighting conditions.
     \item Marking of the 6817 images into positive and negative classes was coordinated. The markup was performed by human experts with formal education in agriculture. The consistency of the experts was assessed by providing the same samples to different experts.
     \item Using this data, an experiment was conducted: YOLOv8 (n, s, m), EfficientNet (V2l, B3, B4), ResNet (34 and 152), MobileNetV3 (small and large) were compared in terms of their accuracy and the inference time on the target computer.
-    \item It was thus demonstrated that good enough performance could be achieved with the means of user-grade cameras and images that were taken from the moving robot. The mutual expert consistencies were matched by the NN model in terms of the classification accuracy, see section \ref{sec_results}.
+    \item It was thus demonstrated that good enough performance could be achieved with the means of user-grade cameras and images that were taken from the moving robot. The mutual expert consistencies were matched by the NN model in terms of the classification accuracy, see section \ref{sec_results_disease}.
 \end{itemize}
 
 The paper is structured as follows.
@@ -141,14 +201,14 @@ The result is an omnidirectional platform with 4 identical wheel pairs.
     \centering
     \begin{subfigure}[b]{0.43\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{gfx/images/robot/cam_pos_scheme_2.png}
+        \includegraphics[width=\textwidth]{images/cam_pos_scheme_2.png}
         \caption{}
         \label{fig_camera_positioning}
     \end{subfigure}
     %\hfill
     \begin{subfigure}[b]{0.43\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{gfx/images/robot/another_2.png}
+        \includegraphics[width=\textwidth]{images/another_2.png}
         \caption{}
         \label{fig_robot_in_real_world}
     \end{subfigure}
@@ -158,14 +218,12 @@ The result is an omnidirectional platform with 4 identical wheel pairs.
 
 %Regarding the power supply of the robot, 6 of 24 \si{A h} 48 \si{V} LiNCA batteries were chosen, resulting in 144 \si{A h} (approximately 7 \si{kW h}) or nearly 14 hours of uptime on one charge with the prospective power consumption of 500 \si{W}.
 
-\blue{
 The power supply and consumption of the robot could be summarized as follows:
 \begin{itemize}
     \item 6 $\times$ 24 \si{A h} 48 \si{V} LiNCA batteries
     \item 144 \si{A h} (approximately 7 \si{kW h})
     \item Nearly 14 hours of uptime on one charge with the power consumption of 500 \si{W}
 \end{itemize}
-}
 
 One of the crucial decisions that had to be made was the positioning of the host computer for the NNs inference.
 The final design of the robot included a relatively powerful computer on board, see section \ref{sec_training}.
@@ -196,7 +254,7 @@ Ideally, the robot is expected to spend all the time in the field moving.
 With real-time processing, it is possible for the workers to rapidly examine specific rows of tomato plants.
 The robot should be capable of observing the same part of the plant from different locations, meaning that the data processing should happen in real-time with a certain overlap in the frames.
 
-During the design of the vision subsystem, the following assumptions were adopted.
+During the design of the vision subsystem, the following assumptions were \\ adopted.
 In the initial testing, the robot was moving at a speed of 0.26 \si{m/s}, which is a safe value for indoor applications.
 Considering potential acceleration for the sake of faster monitoring, an upper-speed limit could be set to 0.5 \si{m/s}.
 The horizontal FoV for the chosen optics covers 1.07 \si{m}.
@@ -208,16 +266,16 @@ This requirement is met with a huge margin.
 \begin{figure}
     \centering
 
-    \begin{subfigure}[b]{0.42\textwidth}
+    \begin{subfigure}[b]{0.6\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{gfx/images/greenhouse/photo_with_disease_1_2.png}
+        \includegraphics[width=\textwidth]{images/photo_with_disease_1_2.png}
         \caption{Image of powdery mildew-infected leaves.}
         \label{fig_photo_with_powdery_mildew}
     \end{subfigure}
     \hfill
-    \begin{subfigure}[b]{0.42\textwidth}
+    \begin{subfigure}[b]{0.6\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{gfx/images/greenhouse/photo_with_disease_2_2.png}
+        \includegraphics[width=\textwidth]{images/photo_with_disease_2_2.png}
         \caption{A scattering of white patches is a clear visual sign of the presence of the disease.}
         \label{fig_photo_with_powdery_mildew_zoomed}
     \end{subfigure}
@@ -242,7 +300,7 @@ The mutual consistencies of the experts in the subsets are given in Table \ref{T
 \begin{table}[ht]
     %\begin{subtable}[h]{0.90\textwidth}
     \centering
-    \begin{tabularx}{0.48\textwidth}{ 
+    \begin{tabularx}{0.82\textwidth}{ 
         | >{\centering\arraybackslash}X 
         | >{\centering\arraybackslash}X 
         | >{\centering\arraybackslash}X 
@@ -265,7 +323,7 @@ The mutual consistencies of the experts in the subsets are given in Table \ref{T
     %\begin{subtable}[h]{0.90\textwidth}
     \centering
     \centering
-    \begin{tabularx}{0.48\textwidth}{ 
+    \begin{tabularx}{0.82\textwidth}{ 
         | >{\centering\arraybackslash}X 
         | >{\centering\arraybackslash}X 
         | >{\centering\arraybackslash}X 
@@ -287,7 +345,7 @@ The mutual consistencies of the experts in the subsets are given in Table \ref{T
     %\begin{subtable}[h]{0.90\textwidth}
     \centering
     \centering
-    \begin{tabularx}{0.48\textwidth}{ 
+    \begin{tabularx}{0.82\textwidth}{ 
         | >{\centering\arraybackslash}X 
         | >{\centering\arraybackslash}X 
         | >{\centering\arraybackslash}X 
@@ -305,7 +363,7 @@ The mutual consistencies of the experts in the subsets are given in Table \ref{T
     %\begin{subtable}[h]{0.90\textwidth}
     \centering
     \centering
-    \begin{tabularx}{0.48\textwidth}{ 
+    \begin{tabularx}{0.82\textwidth}{ 
         | >{\centering\arraybackslash}X 
         | >{\centering\arraybackslash}X 
         | >{\centering\arraybackslash}X 
@@ -323,8 +381,7 @@ The mutual consistencies of the experts in the subsets are given in Table \ref{T
     \end{tabularx}
     \caption*{4 iteration}
     %\caption{\label{Tab:consistencies} Each subtable represents one of 4 iterations of the data markup. A, B, C, and D in the tables represent the individual human experts. The number in $ij$-th element of the table represents the share of the matching labels (positive or negative) for the corresponding experts on a subset of 50 images that they shared during that iteration.}
-    \caption{\label{Tab:consistencies} \blue{Tables of mutual consistencies of the human experts.} Each table represents one of 4 iterations of the data markup. The consistencies of $0.7$ and below are highlighted in bold. A, B, C, and D in the tables represent individual human experts. The number in $ij$-th element of the table is the fraction of the matching labels (positive or negative) for the corresponding experts on a subset of 50 images that they shared during that iteration. \blue{The mean consistency (excluding the consistency of the experts with themselves) is $0.8579$, which closely matches the accuracy of the best model.}}
-
+    \caption{\label{Tab:consistencies} Tables of mutual consistencies of the human experts.} Each table represents one of 4 iterations of the data markup. The consistencies of $0.7$ and below are highlighted in bold. A, B, C, and D in the tables represent individual human experts. The number in $ij$-th element of the table is the fraction of the matching labels (positive or negative) for the corresponding experts on a subset of 50 images that they shared during that iteration. The mean consistency (excluding the consistency of the experts with themselves) is $0.8579$, which closely matches the accuracy of the best model.
 \end{table}
 
 It is worth noting, that the major part of inconsistencies occur as a consequence of the frame quality. It is possible to overcome this issue by reducing motion blur with the help of the cameras with a global shutter, however, this work shows that the target problem can be solved with cameras with a rolling shutter.
@@ -377,14 +434,12 @@ For this subset, the following augmentations were applied:
 The selection of these augmentation techniques aimed to diversify the dataset as much as possible to enhance the model's generalization capabilities.
 \subsection {Experimental setup}
 
-\blue{
 The setup in terms of the training is the following:
 \begin{itemize}
     \item Training the majority of the models for 40 epochs before choosing the best checkpoint. The exact number for each model is given in the table \ref{tabularx:models}.
     \item SGD optimizer was used.
     \item The default values for the learning rate of 0.01 for YOLO models and 0.001 for other models were used.
 \end{itemize}
-}
 
 The choice on the number of epochs was made following preliminary training runs with the learning curves stagnating after such a number of epochs.
 The batch size for all models was determined out of the memory constraints.
@@ -400,10 +455,90 @@ The batch size for all models was determined out of the memory constraints.
 %# III. Results #
 % =============================================
 \section{Results}
-\label{sec_results}
-\begin{table*}[!htb]
+\label{sec_results_disease}
+
+% \begin{table*}[!htb]
+%     \centering    
+%     \begin{tabularx}{1.0\textwidth}{ 
+%     | >{\centering\arraybackslash}X 
+%     | >{\centering\arraybackslash}X 
+%     | >{\centering\arraybackslash}X 
+%     | >{\centering\arraybackslash}X 
+%     | >{\centering\arraybackslash}X 
+%     | >{\centering\arraybackslash}X 
+%     | >{\centering\arraybackslash}X | }
+%     \hline
+%     Model & Params & Accuracy [\%] & Server inference[ms] & Onboard PC inference[ms] \
+%     & Training time & Epochs \\ \hline
+%     Resnet34 & 21.8M & 84.40 & 34.7 & 38.23 & 169m 40s & 40 \\ \hline
+%     Resnet152 & 60.2M & 85.40 & 34.00 & - & 96m 58s & 40 \\ \hline
+%     YOLOv8n & 3.2M & \textbf{85.80} & 5.9 & \textbf{6.6} & 25m 54s & 30 \\ \hline
+%     YOLOv8s & 11.2M & 85.00 & 10.6  & 12.5 & 27m 37s & 30 \\ \hline
+%     YOLOv8m & 25.9M & 84.50 & 30.7 & 33.0 & 29m 40s & 30 \\ \hline
+%     %EfficientNet & 19.3M & 85.40 & 35.1 & 178m 46 s & 40 \\\hline
+%     EfficientNetV2l & 118.5M & 84.07 & 49.3 & - & 124m 19s & 40 \\ \hline
+%     EfficientNetB3 & 12.2M & 80.53 & 14.86 & - & 66m 45s & 40 \\ \hline
+%     EfficientNetB4 & 19.3M & 79.20 & 19.7 & - & 74m 29s & 40 \\ \hline
+%     MobilenetV3small & 2.5M & 83.63 & 4.15 & 6.64 &  54m 23s & 40 \\ \hline
+%     MobilenetV3large & 5.5M & 84.51 & 4.81 & 19.21 & 52m 23s & 40 \\ \hline
+%     \end{tabularx}
+%     \caption{The performance of all models on the first dataset.}
+%     \label{tabularx:models}
+%     \begin{tabularx}{1.0\textwidth}{ 
+%         | >{\centering\arraybackslash}X 
+%         | >{\centering\arraybackslash}X 
+%         | >{\centering\arraybackslash}X 
+%         | >{\centering\arraybackslash}X 
+%         | >{\centering\arraybackslash}X 
+%         | >{\centering\arraybackslash}X 
+%         | >{\centering\arraybackslash}X | }
+%         \hline
+%     Model & Accuracy & Inference server (ms) & 
+%     Inference (ms) & Training time & Epochs & Batch \\ \hline
+%     YOLOv8n & 85.4 & 5.9 & 6.6 & 83m 52s & 40 & 16 \\ \hline
+%     MobilenetV3small & 84.07 & 4.2 & 6.61 & 182m 59s & 40 & 32 \\\hline
+%     MobilenetV3large & 82.74 & 4.87 & 19.41 & 357m 19s  & 40 & 32 \\
+%     \hline
+%     \end{tabularx}
+%     \caption{The performance of the selected models on the second dataset.}
+%     \label{tabularx:models_extended_dataset}
+%     \begin{tabularx}{0.99\textwidth}{ 
+%         | >{\centering\arraybackslash}X 
+%         | >{\centering\arraybackslash}X 
+%         | >{\centering\arraybackslash}X 
+%         | >{\centering\arraybackslash}X 
+%         | >{\centering\arraybackslash}X 
+%         | >{\centering\arraybackslash}X 
+%         | >{\centering\arraybackslash}X | }
+%         \hline
+%     Model & Accuracy & Inference server (ms) &
+%     Inference (ms) & Training time & Epochs & Batch  \\ \hline
+%     YOLOv8n & 77.5 & 3.3 & 7.3 & 472m 32s & 40 & 16 \\ \hline
+%     MobilenetV3small & 77.45 & 4.08 & 6.65 &  293m 1s & 40 & 16\\\hline
+%     MobilenetV3large & 77.45 & 4.95 & 19.16 & 321m 32s & 40 & 16\\
+%     \hline
+%     \end{tabularx}
+%     \caption{The performance of the selected models on the third dataset.}
+%     \label{tabularx:models_aug_dataset}
+
+%\end{table}
+%\end{minipage}
+%\begin{minipage}{0.0\textwidth}
+%\end{minipage}
+%\end{table*}
+
+%We trained these models on the first version of the dataset with the fewest photos.
+%The training took place on the server and the resulting model was run on the on-board computer.
+%For those models for which it was possible to launch the inference, the inference time is indicated on the onboard computer.
+%The remaining models were loaded into video memory, but it was not possible to make an inference on them.
+%Since we are only interested in what we have done with the possible engineering on the onboard computer, that the models we have chosen have made the network and Resnet152 effective, we do not evaluate the distance.
+%We also decided not to consider YOLOv8m and Resnet34 due to the fact that they do not give more accuracy than the remaining MobileNet and Yolo sites while having a much longer inference time.
+%Thus, we chose 4 models: YOLOv8n and YOLOv8s mobilenet small and mobilenet large. \ref{fig:First result}
+
+\begin{landscape}
+\begin{table}[ht]
     \centering    
-    \begin{tabularx}{1.0\textwidth}{ 
+    \begin{tabularx}{0.99\linewidth}{ 
     | >{\centering\arraybackslash}X 
     | >{\centering\arraybackslash}X 
     | >{\centering\arraybackslash}X 
@@ -412,23 +547,28 @@ The batch size for all models was determined out of the memory constraints.
     | >{\centering\arraybackslash}X 
     | >{\centering\arraybackslash}X | }
     \hline
-    Model & Params & Accuracy [\%] & Server inference[ms] & Onboard PC inference[ms] \
-    & Training time & Epochs \\ \hline
+    Model & Params & Accuracy [\%] & Server inference [ms] & Onboard PC inference [ms] &
+    Training time & Epochs \\ \hline
     Resnet34 & 21.8M & 84.40 & 34.7 & 38.23 & 169m 40s & 40 \\ \hline
     Resnet152 & 60.2M & 85.40 & 34.00 & - & 96m 58s & 40 \\ \hline
     YOLOv8n & 3.2M & \textbf{85.80} & 5.9 & \textbf{6.6} & 25m 54s & 30 \\ \hline
     YOLOv8s & 11.2M & 85.00 & 10.6  & 12.5 & 27m 37s & 30 \\ \hline
     YOLOv8m & 25.9M & 84.50 & 30.7 & 33.0 & 29m 40s & 30 \\ \hline
-    %EfficientNet & 19.3M & 85.40 & 35.1 & 178m 46 s & 40 \\\hline
     EfficientNetV2l & 118.5M & 84.07 & 49.3 & - & 124m 19s & 40 \\ \hline
     EfficientNetB3 & 12.2M & 80.53 & 14.86 & - & 66m 45s & 40 \\ \hline
     EfficientNetB4 & 19.3M & 79.20 & 19.7 & - & 74m 29s & 40 \\ \hline
-    MobilenetV3small & 2.5M & 83.63 & 4.15 & 6.64 &  54m 23s & 40 \\ \hline
-    MobilenetV3large & 5.5M & 84.51 & 4.81 & 19.21 & 52m 23s & 40 \\ \hline
+    MobilenetV3s & 2.5M & 83.63 & 4.15 & 6.64 &  54m 23s & 40 \\ \hline
+    MobilenetV3 & 5.5M & 84.51 & 4.81 & 19.21 & 52m 23s & 40 \\ \hline
     \end{tabularx}
-    \caption{The performance of all models on the first dataset.}
+    \caption{Performance of all models on the first dataset.}
     \label{tabularx:models}
-    \begin{tabularx}{1.0\textwidth}{ 
+\end{table}
+
+\vspace{1em}
+
+\begin{table}[ht]
+    \centering
+    \begin{tabularx}{\linewidth}{ 
         | >{\centering\arraybackslash}X 
         | >{\centering\arraybackslash}X 
         | >{\centering\arraybackslash}X 
@@ -440,13 +580,19 @@ The batch size for all models was determined out of the memory constraints.
     Model & Accuracy & Inference server (ms) & 
     Inference (ms) & Training time & Epochs & Batch \\ \hline
     YOLOv8n & 85.4 & 5.9 & 6.6 & 83m 52s & 40 & 16 \\ \hline
-    MobilenetV3small & 84.07 & 4.2 & 6.61 & 182m 59s & 40 & 32 \\\hline
-    MobilenetV3large & 82.74 & 4.87 & 19.41 & 357m 19s  & 40 & 32 \\
+    MobilenetV3s & 84.07 & 4.2 & 6.61 & 182m 59s & 40 & 32 \\ \hline
+    MobilenetV3l & 82.74 & 4.87 & 19.41 & 357m 19s  & 40 & 32 \\
     \hline
     \end{tabularx}
-    \caption{The performance of the selected models on the second dataset.}
+    \caption{Performance of selected models on the second dataset.}
     \label{tabularx:models_extended_dataset}
-    \begin{tabularx}{0.99\textwidth}{ 
+\end{table}
+
+\vspace{1em}
+
+\begin{table}[ht]
+    \centering
+    \begin{tabularx}{\linewidth}{ 
         | >{\centering\arraybackslash}X 
         | >{\centering\arraybackslash}X 
         | >{\centering\arraybackslash}X 
@@ -458,48 +604,36 @@ The batch size for all models was determined out of the memory constraints.
     Model & Accuracy & Inference server (ms) &
     Inference (ms) & Training time & Epochs & Batch  \\ \hline
     YOLOv8n & 77.5 & 3.3 & 7.3 & 472m 32s & 40 & 16 \\ \hline
-    MobilenetV3small & 77.45 & 4.08 & 6.65 &  293m 1s & 40 & 16\\\hline
-    MobilenetV3large & 77.45 & 4.95 & 19.16 & 321m 32s & 40 & 16\\
+    MobilenetV3s & 77.45 & 4.08 & 6.65 &  293m 1s & 40 & 16 \\ \hline
+    MobilenetV3l & 77.45 & 4.95 & 19.16 & 321m 32s & 40 & 16 \\
     \hline
     \end{tabularx}
-    \caption{The performance of the selected models on the third dataset.}
+    \caption{Performance of selected models on the third dataset.}
     \label{tabularx:models_aug_dataset}
-%\end{table}
-%\end{minipage}
-%\begin{minipage}{0.0\textwidth}
-%\end{minipage}
-\end{table*}
-%We trained these models on the first version of the dataset with the fewest photos.
-%The training took place on the server and the resulting model was run on the on-board computer.
-%For those models for which it was possible to launch the inference, the inference time is indicated on the onboard computer.
-%The remaining models were loaded into video memory, but it was not possible to make an inference on them.
-%Since we are only interested in what we have done with the possible engineering on the onboard computer, that the models we have chosen have made the network and Resnet152 effective, we do not evaluate the distance.
-%We also decided not to consider YOLOv8m and Resnet34 due to the fact that they do not give more accuracy than the remaining MobileNet and Yolo sites while having a much longer inference time.
-%Thus, we chose 4 models: YOLOv8n and YOLOv8s mobilenet small and mobilenet large. \ref{fig:First result}
+\end{table}
+\end{landscape}
 
-\blue{Overall, a dataset of powdery mildew-infected leaves was collected with the user-grade RGB cameras.
+Overall, a dataset of powdery mildew-infected leaves was collected with the user-grade RGB cameras.
 A number of neural networks were trained with the best of them performing on par with the human experts.
-The inference time on the onboard computer is well below the maximal acceptable time, thus leaving room for the introduction of other models or increasing the number of cameras.}
-
-
+The inference time on the onboard computer is well below the maximal acceptable time, thus leaving room for the introduction of other models or increasing the number of cameras.
 
 %Further experiments were carried out with them.
 \begin{figure}[ht] 
     \centering
-    \includegraphics[width=0.4\textwidth]{gfx/images/vision_models/acc_fps/server_models.pdf}
+    \includegraphics[width=0.4\textwidth]{images/server_models.pdf}
     \caption{Performance and FPS of the models trained on the first dataset with inference on the server.}
     \label{fig:Firstresult}
 \end{figure}
 \begin{figure}[ht] 
     \centering
-    \includegraphics[width=0.41\textwidth]{gfx/images/vision_models/acc_fps/laptop_models.pdf}
+    \includegraphics[width=0.41\textwidth]{images/laptop_models.pdf}
     \caption{Performance and FPS of the chosen best models trained on the first dataset with inference on the onboard laptop.}
     \label{fig:Secondresult}
 \end{figure}
 
 
 Table \ref{tabularx:models} presents the results of the training of all the models considered on the first version of the dataset, see Section \ref{Data_sampling}.
-It was not possible to run certain models on the onboard laptop, \blue{taking into account the target resolution of 1056 $\times$ 1056}. These models are marked with a dash sign in the \textit{Onboard PC inference} column.
+It was not possible to run certain models on the onboard laptop, taking into account the target resolution of 1056 $\times$ 1056. These models are marked with a dash sign in the \textit{Onboard PC inference} column.
 These models were excluded from further experiments because they were too demanding in terms of computational resources.
 %The remaining models were examined from the standpoint of the combination of accuracy and inference time, see Figure \ref{fig:Firstresult} for results on the server and Figure \ref{fig:Secondresult} for results on the target machine.
 
@@ -516,7 +650,7 @@ Another series of experiments was carried out with three aforementioned models a
 The results did not subvert the expectations with accuracy slightly increasing for MobilenetV3small and slightly dropping for other models.
 
 With the third version of the dataset the accuracy values have become significantly worse, see Table \ref{tabularx:models_aug_dataset}.
-The values of the metrics for different models are relatively close to each other, \blue{matching} the consistency of the experts in terms of accuracy.
+The values of the metrics for different models are relatively close to each other, matching the consistency of the experts in terms of accuracy.
 Thus, the reasonable qualitative explanation could be that the performance is limited more or less by the data quality, not the models' generalization capabilities.
 The best performance by both accuracy and time was shown by YOLOv8n neural network.
 The False Negative rate for it is 6 \%.
@@ -527,7 +661,7 @@ The output of the model matched the expert labeling for 96 samples of 100.
 
 The overall performance in terms of speed is well above the minimal requirements, meaning that the monitoring speed is limited by the robot's motion (because of safety concerns), not by the inference time of the neural networks.
 
-\blue{It is worth noting that this excessive performance could be beneficial for solving other related problems. For instance, to detect certain tiny insects it will be necessary to install much more cameras with small FoV. Their number could rise to dozens, requiring very low inference time for a single image. These cases could be addressed without any substantial modification to the vision pipeline.}
+It is worth noting that this excessive performance could be beneficial for solving other related problems. For instance, to detect certain tiny insects it will be necessary to install much more cameras with small FoV. Their number could rise to dozens, requiring very low inference time for a single image. These cases could be addressed without any substantial modification to the vision pipeline.
 
 % ==================
 %# IV. CONCLUSION #
@@ -544,9 +678,9 @@ A dataset of powdery mildew-infected tomato leaves was collected, labeled and as
 Several modern neural networks were trained for classification and compared on two test sets with one of them being marked by a consensus of experts.
 The performance of the models is sufficient and matches with the mutual consistencies of the human experts.
 
-\blue{It was demonstrated that real-time disease recognition could be performed on the robot while moving with the means of the user-grade cameras.
+It was demonstrated that real-time disease recognition could be performed on the robot while moving with the means of the user-grade cameras.
 The main limitation of the chosen approach is that RGB cameras require sufficient lighting to function properly.
-However, in the given circumstances this requirement is naturally met.}
+However, in the given circumstances this requirement is naturally met.
 
 \subsection{Future work}
 
@@ -565,6 +699,3 @@ Third, high-level control should be implemented in the system for the robot to b
 Fourth, a Graphical User Interface should be implemented for the end user to control the robot without substantial UNIX knowledge.
 
 Finally, more disease types and crop types should be introduced into the vision subsystem.
-
-\end{description}
-
