@@ -1,0 +1,85 @@
+\chapter*{Conclusion}                       % Заголовок
+\addcontentsline{toc}{chapter}{Conclusion}  % Добавляем его в оглавление
+
+
+%\input{common/concl}
+
+Overall, a work was done in the field of automated greenhouse monitoring.
+The main contribution lies in the intersection of theoretically supported developments in the sufrace recognition and engineering problems that were solved during this work.
+
+The main results of this dissertation are:
+
+\begin{enumerate}
+\item A method of ellipsoid volume estimation was developed and tested in the real environment.
+Synthetic data was generated with gradual increase in complexity.
+A real dataset of point clouds and corresponding RGB images was gathered and marked.
+The dependence of the quality of the method's outout on the iterations number was evaluated in numerical experiments, showing minimal average relative volume estimation error of 0.25.
+
+The comparison of the method with three alternative approaches was made, showing superior performance on the real data both in terms of IoU and volume error.
+It was thus shown that the proposed method can be applied to the real-world ellipsoid volume estimation.
+
+\item A method of robust volume estimation was applied to tangerines.
+A dataset of point clouds and RGB images was gathered, and the tangerines were measured in terms of mass and volume.
+Numerical experiments were conducted with varying hyperparameters.
+The results suggest that Random Sample Consensus can be successfully applied in the problem of volume estimation.
+
+The proposed approach has a number of applications in agriculture.
+First, it can be applied to the problem of the instant yield estimation.
+In order to assess the volume of the yield, a robot can be used that will monitor the agricultural facility and provide the estimated volume.
+Second, the measurements of the volume across different time periods can be helpful for the development of a prognostic tool for the prospective yield.
+
+Future work can include the generalization of the method to other types of fruit, including non-elliptical ones.
+In particular, they can have a shape of a curved ellipsoid, like a banana, or a superellipsoid, like sweet pepper.
+
+The proposed method can run on a normal computer with resonably computational load.
+In future RANCAS for ellipsoids can be adapted to the CUDA-based inference in order to speed up the computations.
+
+\item A neural network-based end-to-end tangerine volume estimation method was proposed.
+It relies on the PointNet++ architecture.
+The training on the custom dataset takes nearly 1.5 hours, and the error in the volume estimation lightly exseeds 10$\%$.
+
+The inference time of 290 milliseconds allows for the real-time onboard inference with limited computational resources.
+The proposed approach can be used on mobile robots for the agricultural facilities monitoring.
+
+\item An autonomous agricultural robot on an omnidirectional platform was designed, prototyped, and tested in a real environment.
+The camera's positioning allows for the examination of the whole tomato plant, and the onboard computer is capable of processing the data in real-time.
+
+A dataset of powdery mildew-infected tomato leaves was collected, labeled and assessed in terms of consistency. It contains a sufficient amount of data for training modern neural networks of reasonable size, which makes it useful for further industrial applications.
+
+Several modern neural networks were trained for classification and compared on two test sets with one of them being marked by a consensus of experts.
+The performance of the models is sufficient and matches with the mutual consistencies of the human experts.
+
+It was demonstrated that real-time disease recognition could be performed on the robot while moving with the means of the user-grade cameras.
+The main limitation of the chosen approach is that RGB cameras require sufficient lighting to function properly.
+However, in the given circumstances this requirement is naturally met.
+
+\end{enumerate}
+
+\begin{figure}[!htb]
+  \centering
+  %\begin{subfigure}{0.48\textwidth}
+  %    \centering
+      \includegraphics[width=0.6\textwidth]{images/robot_3_version.jpeg}
+      \caption{The third version of the robot with the camera masts installed. The height of the robot is approximately 3.5 meters, allowing it to inspect the whole tomato plant in one go.}
+      \label{fig_tomatoes_projection}
+  %\end{subfigure}
+\end{figure}
+
+Overall, the work advances the ongoing endevour of automating the greenhouse monitoring.
+There are still problems to be addressed, in particular they are connected to the integration of the proposed technologies into the on-site practice in the real greenhouses.
+
+The next steps in this project are planned to be the following.
+%First, the robot requires certain polishing and finalization in terms of mechanics.
+%In order for it to be constantly deployed in a humid environment it should be watertight.
+%On the other hand, isolating the inner volume from the environment will require heat dissipation to be reconsidered.
+
+%Second, the cameras are supposed to be substituted by a global shutter-based one.
+%It will practically eliminate the motion blur while requiring certain modifications to the data transfer subsystem.
+%Moreover, the production-ready version of the camera poles has to be manufactured.
+%It is supposed to hold the cameras with the help of a mechanism that allows for vertical and horizontal position adjustment.
+
+First, high-level control should be implemented in the system for the robot to be capable of localizing itself and autonomously following the trajectory set by the user.
+
+Second, a Graphical User Interface should be implemented for the end user to control the robot without substantial UNIX knowledge.
+
+Third, more disease types and crop types should be introduced into the vision subsystem.

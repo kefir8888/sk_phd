@@ -1,0 +1,369 @@
+\chapter{Background}
+
+\section{Modern Agriculture}
+
+\subsection{Modern Greenhouses}
+
+The target environment for the monitoring robot can be described as follows.
+Modern greenhouses are highly structured, consisting of repeating sections, where the plants are grown.
+A considerable portion of tomato farming facilities are equipped with rails, that are regularly layed perpendicular to the central alley.
+The monitoring by a human worker is normally performed either by walking or by riding a specialized vehicle with an elevation mechanism, allowing them to inspect the whole height of the plant.
+An image of the line with tomato plants is presented in the Figure \ref{fig:greenhouse}.
+
+\subsection{Imaging Hardware in Monitoring Automation}
+
+The physical examination of the fruit and measuring the volume with the underwater submersion can be used, as well as the measurement of the physical dimensions of the fruit and using a geometrical model to obtain the volume.
+However, this approach is excessively labour-intensive and requires manual manipulation of the fruit.
+Thus, a number of contactless approaches were proposed, mainly relying on monocular or stereoscopic vision.
+
+In the recent years computer vision-based monitoring methods gain traction.
+They mainly rely on RGB sensors, and in certain cases depth cameras.
+While RGB-only sensors are much cheaper, depth information about the scene allows for more precise volume estimation.
+One of the key factors in the vision-based volume estimation is the noise that is an inherent property of the sensor data in the real greenhouse facility.
+In order to accommodate for these noises, robust volume estimation techniques should be applied.
+
+Let us briefly cover the main advantages and disadvantages of these approaches.
+On the one hand, monocular setups are often cheaper than stereoscopic.
+On the other hand, the performance of the monocular vision is limited by the inability of such methods to perceive true depth in the scene.
+Stereoscopic approaches capture the true volume better, but their usage is complicated by the setups being more expensive, bulky and difficult to work with.
+
+%When it comes to visual perception, there is an important distinction between monocular and stereoscopic vision.
+%On the one hand, monocular vision-based systems are straightforward, do not require synchronization and high bandwidth.
+%On the other hand, stereoscopic vision normally provides rich data about the scene, allowing for more precise position and volume estimation.
+
+Disease detection, object detection for calculation and a variety of other problems can be perfectly solved with monocular vision.
+But precise volume estimation requires at least some awareness about the true depth in the scene \cite{ghahremani2021feature}.
+Acquiring quality depth map could be a challenge, given the varying lighting conditions in certain challenging environments like greenhouses.
+
+Stereoscopic cameras with active infrared lighting, such as Intel RealSense D435i \cite{Intel_RealSense_Stereoscopic_Depth_Cameras}, are a standard solution here.
+They not only emit monochromatic light in a pattern so that the depth could be recovered, but also perform all the calculation onboard, providing the user with a virtual camera with the depth.
+
+Going further, the most notable research belongs to the group of methods that rely on the point clouds.
+This data modality proves itself to be convenient for precise position, volume and rotation estimation.
+Point cloud-based data is sparse, thus compact, in contrast to voxels.
+
+\subsection{Volume Estimation and Ellipsoidal Model}
+
+Tomatoes, tangerines and other fruit can be approximated as ellipsoids.
+An ellipsoid is described by 9 parameters: three coordinates, three semi-axis, and orientation.
+In this work episode model was used for the tangerines and tomatoes and the results show that this approximation allows for precise enough volume estimation.
+
+%Volume is a key physical attribute of the fruit yield in agricultural production, and tangerines are one of the most important fruit in the agricultural produce worldwide\cite{li2025metafruit}.
+%An ellipsoidal model can be used to approximate this fruit with 9 parameters: three coordinates, three semi-axis, and orientation.
+
+The ellipsoid identification problem widely arises as a part of modern computer vision in a variety of applications, including agricultural \cite{ghahremani2021direct} \cite{xie2021improved}, medical \cite{HOSSEINNEJAD2018325}, robotics \cite{martinez2022ransac}, and environmental reconstruction \cite{li2017improved}.
+
+The real-world setting is often associated with noise in the sensor output, which naturally leads to the demand for robust algorithms for obtaining ellipsoids.
+
+%Volume is one of the most important physical attributes of the fruit yield in agricultural production.
+%The approaches to the measurement of the volume include the following.
+%First, it is the physical examination of the fruit and measuring the volume with the underwater submersion.
+%The second approach includes measuring the physical dimensions of the fruit and using a geometrical model to obtain the volume.
+%Finally, a number of contactless approaches were proposed in the literature recently, mainly relying on monocular or stereoscopic vision.
+
+%Yield volume estimation is the integral part of modern farming.
+While classical model-based approaches are already well-developed, in the recent years neural network-based end-to-end methods gain traction.
+One of the papers comprising this work is devoted to the case study of applying a PointNet++-like neural network to the problem of tangerine volume estimation with the point cloud data.
+The output quality was assessed via comparing the prediction of the method with the real volume of the fruit.
+The average volume estimation error slightly exceeds 10\%.
+
+Regarding general volume estimation, in the monocular case the most common method relies on the dividing of the object into slices with evaluating their volume based on the geometric features, and adding the obtained volumes.
+Such is the work \cite{mansuri2022computer}, where the volume of Thai apple ber is evaluated.
+
+In the case of irregularly shaped objects, similar approach can be applied \cite{huynh2022vision}.
+The volume of the sweet potato is evaluated with adding all the volumes of the slices of the same height.
+
+Another family of approaches can be used with regularly shaped objects only, such as tomatoes, tangerines and alike.
+A model is chosen that corresponds well to the object, and its parameters are fitted to the observed data \cite{jana2020novo}.
+
+While multiview setup is used, both approaches remain feasible, but fitting model parameters is prevalent.
+
+In the series of papers \cite{khojastehnazhand2008determination},\cite{khojastehnazhand2010determination},\cite{omid2010estimating} authors propose the combination of the aforementioned approaches by combining slicing with circular slice parameters estimation from two cameras.
+
+However, slicing approach has a number of drawbacks, one of the most significant of them being the loss of precision while working with sparse point clouds.
+An examplary case of the ladder is \cite{ling2024divespot}.
+This work is devoted to the estimation of the volume of pile-like objects, like stored sand or grain.
+The proposed method relies on the sampling of a voxel grid in accordance with the input point cloud.
+
+Finally, there is a group of shape estimation techniques that rely on Random Sample Consensus (RANSAC) \cite{fischler1981ransac}.
+The presented work belongs to this class of methods.
+
+%Volume estimation is a fundamental problem that has to be solved in a variety of real-world scenarios, ranging from agriculture\cite{nakaguro2015volumetric} to medicine \cite{rodriguez2008prostate}.
+
+A number of the objects can be approximated as ellipsoids, including pineapples \cite{chaivivatrakul_crop}, human head \cite{barros2018combined} and jujubes \cite{han2019ellipsoid}.
+There is also a branch of research that relies on spherical models \cite{ambrus2024field}, but its applicability is limited for elongated objects.
+
+Moreover, fitting a surface directly to the point cloud data instead of using proxy metrics like projections \cite{chopin2017new}, \cite{chopin2017new} is more straightforward and systematic way of approaching the problem.
+
+However, to our knowledge there are no works that combine NN-based detection with robust volume estimation.
+
+The proposed method was compared with three modern approaches on both synthetic and real data from the agricultural context.
+The results are presented in the Tables \ref{tabularx:comp_clean_models}, \ref{tabularx:comp_segment_models}, \ref{tabularx:real_data_results} and \ref{tabularx:methods_summary}.
+
+The first one is \cite{zhao2024bayesian}.
+In this work a Bayesian approach to ellipsoid fitting was taken, that generalizes well even to higher dimensions.
+This algorithm maximizes the probability of the output model given the data, thus being robust to noise and out-of-distribution points.
+
+The second one is the implementation of Matlab Ellipsoid Fit \cite{yury_ellipsoidfit}.
+In this work the problem of ellipsoid obtainment is approached with LLSQ, followed by bringing the ellipsoid to the form of a quadric surface.
+
+Finally, the proposed approach was compared with \cite{han2023ellipsoid}.
+The authors noted that in a lot of RANSAC implementations either the geometrical or algebraic distance was used in order to evaluate the quality of the model.
+An alternative approach was proposed, relying on the combination of the axial and Sampson distance, which gave high robustness against outliers and competitive processing time.
+
+\section{Literature Review}
+
+\subsection{Evolution of Pattern Recognition Methods}
+
+Curve recognition and shape recognition is an important part of many modern industrial applications.
+In particular, ellipses are used to approximate the section of a pipe, human head, and other objects that appear as ellipses \cite{han2019ellipsoid}.
+Real-world 3D circles appear as ellipses to a tilted camera, and its parameters provide information about the position, distance and the inclination angle of the said circle.
+
+There is a number of approaches to the shape recognition problem.
+The most widely used include least squares method, Hough transform and RANdom SAmple Consensus(RANSAC) \cite{fischler1981ransac}.
+Let us briefly cover the main features of these approaches.
+
+The input of all these algorithms is a number of two-dimensional points, and the output of the algorithm for ellipses are five parameters, namely two coordinates, two semiaxes, and the rotation angle.
+The standard way of using ellipse recognition approaches is the following.
+First, an image is taken with the robot’s onboard camera or other imaging device.
+Second, the image is segmented. Third, the part of the segmentation mask that corresponds to the ellipse is processed in order to decrease the number of pixels in.
+Finally, all the points are fed into the recognition algorithm.
+
+\subsubsection{Least Square Method}
+
+First of all, least squares method is simple, straightforward, fast, easy to interpret.
+It relies on the quadratic error function that is differentiated with respect to the model parameters.
+It results in a set of equations that could be solved for the values of the parameters that minimize the quadratic error.
+While this method is widely used, it has certain drawbacks.
+The main one is that (in its vanilla form) this method lacks robustness to noise.
+If presented with a data with a small portion of strong outliers, classical least squares method will incorporate those outliers in the calculation of the optimal model parameters, which significantly degraded the quality of the output model.
+Consequently, least squares methods cannot be used if significant noise is present.
+
+There are generalisations and improvements on top of LSQ, such as weighted LSQ, but they still present more limitations than the method that was used in the experiments.
+
+% Shape recognition problem can be approached in a number of ways, with the simplest ones being not robust to noise and more sophisticated ones being computationally heavy.
+% The simplest approach is the Least Squares Method (LSM).
+% It is simple and straightforward, producing the output model with a number of straightforward matrix operations.
+% In this method a quadratic error function is differentiated with respect to the model parameters, resulting in a set of equations.
+% They are solved for the values of the parameters that minimize the quadratic error.
+% However, this method has a number of drawbacks.
+% The most crucial one is that LSM lacks robustness to noise.
+% While presented with a data with strong outliers, least squares method incorporates those outliers in the calculation of the optimal model parameters, significantly degrading the quality of the produced model.
+% Thus, LSM cannot be used if significant noise is present.
+
+\subsubsection{Hough Transform}
+
+In the 1960s, when modern computers started to appear in research institutions, a novel approach to data analysis was invented.
+It was widely adopted, previously being unusable by human workers because of heavy computational burden that should be carried in order for this method to work.
+This method goes by the name of Hough transform.
+In contrast to the previously mentioned least squares method, this approach relies on the explicit formation of the discretized parameter space for all the possible models.
+For such objects as lines the dimensionality of the parameter space is two if these lines exist on the two-dimensional plane.
+For such objects as circles or parabolas the dimensionality of the parameter space will be equal to three.
+For such objects as ellipses the dimensionality of the parameter space will be equal to five.
+
+Hough transform algorithm works as follows.
+First, a so called accumulator is created.
+The dimensionality of this array is equal to the number of independent parameters in the model.
+It is usually set to be an array with the integer elements.
+For instance, for circles, it will be a three-dimensional array.
+Each of the axis will represent x coordinate, y coordinate and the radii of the circle, respectively.
+
+After the accumulator is formed, the main loop begins.
+It consists of iterative going through all the input data points.
+For each of them all the possible models are considered that go through that point.
+A discrete step corresponding to the discretization of the accumulator array is used.
+For two-dimensional lines a number of the possible models is proportional to Pi over the discretization step.
+For circles there are two different discretization steps, resulting in the quadratic number of possible models.
+It could be noted that with the growth of the dimensionality of the model, the size of the accumulator and the number of iterations grow rapidly.
+Consequently, for five-dimensional surfaces and curves applying classical Hough transform becomes infeasible.
+
+The second method that is oftem used for pattern and shape recognition is Hough transform \cite{hough1962method}.
+In contrast to the previously mentioned method, this approach relies on the explicitly considering the discretized parameter space for all the possible models.
+For lines on the plane the dimensionality of the parameter space is two, for circles it is three, for ellipses it is five, which (being implemented in the vanilla straightforward way) is already demanding in terms of the memory requirements.
+
+In the presented work the dimensionality of the objects under consideration is nine, and the data is noisy, making both LSM and Hough transform not applicable.
+
+\subsubsection{RANdom SAmple Consensus}
+
+Random sample consensus is a de-facto standard for a number of computer vision problems, including perspective transform evaluation, 3D reconstruction \cite{nyalala2019tomato}, and pose estimation.
+A number of works were devoted to the evaluation of the influence of the noise on the output quality \cite{rodriguez2008prostate}.
+However, RANSAC is not a single algorithm, it is rather a family of algorithms with their performance, speed, complexity, and convergence, depending solely on the class of the models considered \cite{yu2009outlier}, \cite{ghahremani2021feature}.
+
+In this work, a systematic approach is taken towards examining the performance of the random sample consensus approach in application to a specific problem of second order curse fitting.
+
+Compared to Least Squares, RANSAC demonstrates superior robustness to outliers.
+RANSAC-based approaches are often used under challenging circumstances, see \cite{raguram2008comparative}.
+With these methods it is possible to solve problems where parts of the data directly contradict the resultant hypothesis, which is often the case with imperfect feature correspondence in vision-related problems.
+Despite these difficulties RANSAC allows for precise and robust two-view image correspondence \cite{torr2000mlesac} \cite{hossein2016image} and pose estimation \cite{lee20201}.
+
+Random Sample Consensus (RANSAC) is an iterative method of fitting the model to the data.
+It is capable of producing quality results even in the presence of high out-of-distribution noise.
+
+In contrast to the Hough transform, RANSAC relies on a relatively small pool of models, lifting the memory consumption burden.
+Moreover, RANSAC does not take into account all the input points, thus being capable of disregarding outliers.
+On each step a small subset of data is randomly chosen.
+After that, a single model is obtained.
+The size of this subset allows one to specify a single unique model for the object considered.
+After the model is obtained, a number of data points that are represented well by this model is calculated.
+
+The exact metric for the quality of the fitting can vary.
+The most straightforward way of evaluating that is measuring the distance from this point to the model.
+However, it is not always possible to find an analytical expression for that distance, leading to the lengthy iterative evaluation process.
+There is an alternative, relying on the algebraic distance.
+Algebraic distance is the value of the polynomial, that describes the object under consideration, be it curve or surface.
+There are other approaches to the measurement of the distance from the point to the model, in particular, a mixture of the geometrical distance and the distance measured along the semiaxes of the ellipsoid, as proposed in the paper \cite{han2023ellipsoid}.
+
+Overall, random sample consensus is a standard way of solving a number of computer vision problems, including perspective transform evaluation, 3D reconstruction\cite{nyalala2019tomato}, and pose estimation.
+
+Regarding the drawbacks of RANSAC, it is computationally demanding, especially for complex objects.
+Thus, a balance should be found between the quality of the output and the performance requirements.
+
+To our knowledge, there are no works on the application of RANSAC to the tangerine volume estimation.
+This paper aims to address this research gap.
+
+\subsubsection{Limitations of RANSAC}
+
+However, there are certain shortcomings to this approach.
+First, it is inherently stochastic, lacking reproducibility.
+Second, looping through the whole set of input data multiple times can be time-consuming.
+Third, increasing the number of iterations gives diminishing returns in terms of the output quality.
+Fourth, there is a number of hyperparameters in RANSAC, particularly the threshold value for inlier counting (see Subsection \ref{sec_ransac_algorithm} for details) and the assumed fraction of inliers.
+Both of them have to be tuned manually, and if chosen improperly, can lead to degradation in quality.
+Fifth, increase in the noise level leads to exponential growth in the number of necessary iterations \cite{shi2024ransac}.
+Sixth, as the complexity of the parametric model grows, the number of iterations necessary also increases.
+For line extraction \cite{li2022vision} it is enough to sample two points from the data and solve small linear system, but for more complex objects like quadric surfaces the number of the equations in the system grows to 9 \cite{han2023ellipsoid}.
+
+\subsubsection{Extensions, Generalizations and Improvements of RANSAC algorithm}
+
+A lot of work was done in order to address these issues since the publication of the original work \cite{fischler1981random}.
+There are numerous works that are aimed at extending the applicability of RANSAC \cite{raguram2008comparative}.
+One of the possible approaches relies on sampling a set of points with the number that exceeds the minimal necessary \cite{rosten2010improved} in contrast to the baseline RANSAC.
+
+Another extension of the method is Differentiable RANSAC \cite{wei2023generalized}.
+It relies on the shift towards gradient-based optimization instead of grid search in standard RANSAC.
+In order to optimize the number of iterations, Variable Sample Consensus (VARSAC) was proposed \cite{yu2009outlier}.
+
+In the last years a number of works were concerned with adding adaptiveness to RANSAC, for instance by iteratively updating the output hypothesis considering residuals from the previous iterations \cite{cavalli2023consensus}.
+
+\subsubsection{Influence of Noise on RANSAC Results}
+
+There are works devoted to the evaluation of the influence of the noise on the RANSAC output for certain problems, such as plane estimation \cite{Lee20201PointRM}.
+However, none can be found that focus specifically on the quadric surfaces, that is a specific case in the domain of all the RANSAC applications.
+First, the number of the parameters needed to describe a unique ellipsoid is 9, which is signifinactly more than for a line or a circle, thus leading to a small probability of sampling a subset of points that do not contain outliers.
+Second, a conventional way of measuing the distance from the surface to the data point is not geometric, but algebraic, meaning the value of the polynomial that defines the surface.
+In summary, this work is a case study of the application of the classical baseline RANSAC to a specific problem, that is supposed to serve as an estimate of what could be expected of RANSAC-based algorithms in such applications.
+
+\subsubsection{Combining RANSAC with other Image Processing Methods}
+
+Shape and pattern recognition were developed since the dawn of the modern computers.
+The first methods like Hough transform \cite{hough1962method} were applied in 1960s to the problem of recognizing tracks in the bubble chamber to analyze the behavior of the particles in the accelerator.
+The automation of the recognition significantly reduced the burden of data processing for scientists and engineers, making it possible for them to focus more on the substance of their experiments instead of tedious measurements and calculations performed by hand.
+A number of robust methods were developed, capable of extracting the meaningful information from the noisy data.
+Suddenly it has become possible to analyze large quantities of data in short time by the means of computers.
+
+Several decades later shape and pattern recognition methods started to be applied in other areas of human activity.
+In particular, they are nowadays used in document recognition, medicine, monitoring, and security.
+Regarding the agricultural applications, pattern and shape recognition has a variety of applications.
+They include activity monitoring of human workers, safety monitoring, disease detection, crop loss prevention and yield estimation.
+
+In order for the supply chain to function properly it is necessary to estimate the yield that can be harvested at a certain facility.
+This includes the number of fruit and their total mass, which is often simply proportional to the volume.
+If the yield estimation is performed by human workers, it could be slow and prone to error.
+Moreover, manual assessment is a boring and tedious task, requiring facility inspection during prolonged periods of time.
+Automated methods of yield estimation are already introduced into the market, but they are not adopted everywhere yet.
+
+Among all the methods of automated monitoring of the agricultural facilities, computer vision-based methods are applied more frequently than the other.
+It can be attributed to the advantages of the vision channel of perception.
+Computer vision-based methods allow for contactless monitoring.
+Digital cameras are already well-developed and cheap enough for them to be widely adopted.
+Moreover, there already exists a wide range of methods that could be straightforwardly applied to the problems of classification, detection, segmentation and regression in the agricultural context.
+
+Some of these problems are more straightforward to solve than the other.
+In particular, the development of a system to detect the object in the greenhouse is streamlined to the collection of the dataset and training and already existing model of YOLO family \cite{redmon2016yolo}, which often gives a solution as good as the data allows.
+The classification problem can be solved in the similar manner, considering a case of RGB monocular images.
+Overall, monocular image processing in agricultural context could be considered to be in almost solved problem.
+There are a number of works with the classical computer vision approaches being applied to volume estimation, see \cite{nyalala2019tomato}, \cite{ghahremani2021feature}.
+
+When it comes to the stereoscopic setups or point cloud processing, the number of widely available tools becomes smaller.
+There are two major families of approaches in this field.
+First of them relies on the classical shape recognition techniques like least squares, Hough transform or Random Sample Consensus (RANSAC) \cite{fischler1981ransac}.
+While the first approach is sensitive to the noise, and the second is heavy on memory consumption, RANSAC is capable of solving the problem of fitting complex objects with a lot of parameters, such as ellipsoids.
+
+\subsection{End-to-end Volume Estimation}
+
+Let us briefly recap the widely adopted approach to the volume estimation with this method, applied to the ellipsoid-like objects like tomatoes and tangerines.
+First, the point cloud data is obtained by a camera that is aligned with an RGB sensor.
+After that, all the objects of interest are detected.
+The point clouds that correspond to this object are extracted.
+Finally, RANSAC is applied to fit a single model to the object.
+This method allows one to estimate the volume, since the model includes three semiaxes of the object, and if it could be approximated as an episode, the volume of the fitted model will be close to the volume of the object of interest.
+
+RANSAC relies on multiple samplings of a small subset of the input data.
+For each subset, a single model is fitted.
+After that, it is measured against all the input data points and it is evaluated how good or bad does this model describe the entirety of the input.
+The output of the method is the model that corresponds the best to the input points, excluding the out-of-the-distribution noise, which is inevitable in real data in a greenhouse facility.
+This method is widely used and developed, still receiving attention from the community, and it is modified in certain details, such as the method of measuring the distance from the model to the point \cite{han2023ellipsoid}.
+
+With all the advantages of this method, there are a number of drawbacks.
+Due to the iterative manner of model generation, RANSAC can require significant computational power.
+Constructing the model of a high-dimensional object is heavy on computations as well.
+The development of a method to obtain a model from a set of points requires manual engineering for each new type of objects under consideration.
+Moreover, RANSAC relies on a number of assumptions and hyperparameters that should be manually tuned.
+
+It could be noted that in order to evaluate the volume of the object it is not necessary to construct its full model.
+A representation of the object should be constructed, but it is not required to include the coordinates and the orientation.
+Recent advancements in neural networks make it possible to develop an end-to-end method of volume estimation, bypassing the construction of the full model.
+
+The nature of point cloud data requires a specific approach for it to be processed by a neural network.
+While some of the most widely used types of neuron networks, like fully-connected or convolutional, are capable of approximating complex functions, learning dependencies, and producing state-of-the-art results in a number of applications, they cannot be directly applied to the raw point cloud data.
+Point clouds are sets of three-dimensional points, in certain cases with color.
+The model that will process this data should ideally be invariant to the permutations in the data.
+It was shown to be difficult to enforce such a property to a standard neural network.
+They could be applied to the data if the point cloud is transformed with the methods like voxelization, but this approach leads to significant growth of the computational complexity.
+Point clouds are inherently sparse, and this property should be taken into account while the method is developed.
+
+In 2016 a novel approach PointNet \cite{qi2017pointnet} was proposed.
+It relies on the processing of all the data points individually and then extracting the necessary features from the point cloud of variable size, which is not possible with the other, standard approaches.
+Another novelty of PointNet is the application of two smaller networks, that are used to generate rotation matrices that are transforming the data before it is fed into the main network.
+Further advancements in the development of the PointNet family include joining them with the generalization of convolution \cite{thomas2019kpconv}, that was developed specifically to fit the demands of the point cloud data.
+With these generalized convolutions the local features of the point cloud could be taken into account, which is beneficial for the end result.
+
+In this work a PointNet++-like model was used.
+
+\subsection{Disease detection}
+
+There is a variety of great works in the field, let us briefly cover some of them.
+One of the closely related ones is \cite{nyalala2019tomato}.
+In this work the mass and volume estimation relies on the depth images of the cherry tomatoes on a conveyor belt.
+As a result, a relation between the tomato mass and volume was established.
+While this result is applicable in certain cases, non-invasive or contactless volume estimation requires a solution that will work without a conveyor belt, while the tomato is hanging in the air.
+There is a number of works that rely on conveyors and contrastive background, including \cite{li2021novel}, \cite{huynh2022vision} and \cite{jana2020novo}.
+
+Another related paper is \cite{chaivivatrakul_crop}.
+A sequence of classical algorithms is used, including Harris corner detection, SIFT keypoint descriptor and SVM.
+The method is applied in the problem of pineapple 3D reconstruction.
+After obtaining 3D points of the pineapple surface, the center, orientation, and radii of the fruit are estimated with the help of the Least Squares.
+Judging by the metrics, this approach works well on the given type of data.
+However, such fitting methods as Least Squares are prone to error while presented with the noisy data.
+And the point clouds in the greenhouse are very noisy, which is evident from the Figure \ref{fig:tomat}.
+
+There is a number of reasons behind this.
+First, the tomatoes themselves are quite small, while compared to the pineapples, thus limiting the resolution of the data.
+Second, there are leaves and other vegetation around, partially obstructing the view.
+Third, there could be errors in distinguishing between one tomato and another, because they often hang in direct contact.
+Fourth, in order to assure sufficient monitoring speed, the inspection has to be performed as the robot moves, which leads to various types of noises and disturbances in the data, including motion blur and shaking of the camera sensor.
+Thus, a robust method should be proposed, that allows for the effective outlier exclusion \cite{yu2009outlier}.
+
+A very closely related paper by Han, Kan and Wang is \cite{han2019ellipsoid}
+which is an adaptive algorithm on top of RANSAC.
+A two-ellipsoid method with one of them being fitted inside the jujube and another outside is proposed.
+However, in this work a color-based point cloud segmentation method is used, which could be inconvenient in real-world scenarios.
+In the family of RANSAC-based methods also \cite{ghahremani2021direct} should be noted.
+
+% \subsection{Wheeled platforms}
+
+% existing platforms
+
+% existing patents
+
+% requirements to the platform

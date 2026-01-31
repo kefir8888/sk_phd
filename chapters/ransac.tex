@@ -1,0 +1,518 @@
+\chapter{RANSAC for Quadric Curves and Surfaces}
+
+\section{Vanilla RANdom SAmple Consensus Algorithm}
+\label{sec_ransac_algorithm}
+
+Let us describe the classical RANSAC algorithm, as per paper by Fischler and Bolles \cite{fischler1981ransac}. It was previously mentioned, that least squares suffer from sensitivity to outliers, and Hough transform from the rapid growth of the accumulator size. This is where random sample consensus-based algorithms could be used. In contrast to the Hough transform, where all the parameter space is considered explicitly, random sample consensus relies on the chosen models from all the possible ones from the perimeter space, thus saving memory. At the same time, in contrast to the least squares methods, random sample consensus is not obliged to take into account all the points of the input data. It relies on the sampling of a number of subset of data. For each subset, a separate model is created. The number of the points in this subset has to be such that it determines a single unique model for lines. It will be two points for a line, and for ellipse it will be five points. After the model is obtained, it is calculated how many of the input data points are described by the model.
+
+This notion of how the data points are described by the model is in itself a variety of different approaches. The first way to tell if the data point is described by a model is to measure the distance from this point to this model, and the second way of doing this relies on the so-called algebra distance. Considering a case of an ellipse, the equation describing it is a second-order equation with two independent variables. If the left side of this equation is considered as a polynomial, the value of this polynomial is zero on the ellipse and not zero inside and outside. The value of the polynomial on the data point could be considered as a distance from the point to the model. There are also alternative approaches to the measurement of the distance from the point to the model. In particular, there is a mixture of the geometrical distance, and the distance measured along the semiaxes of the ellipsoid in the paper \cite{han2023ellipsoid}.
+
+There are also ways to count the fitness of the model for the dataset. After the distances are obtained with one of the methods described above, a single scalar metric should be calculated. It could be a sum of indicator functions. If the distance from the point to the model is below a certain threshold, the point is considered to be fit for the model. The best model among the same ones is the one that has the biggest number of inliers. However, there are alternative approaches to counting the fitness of the model for the data. For instance, monotonous decreasing function could be used as a weight function instead of the threshold function, such as the exponential of minus distance from the point to the model.
+
+Random sample consensus algorithm is inherently stochastic.
+It relies on the random generator, and also if part of the input data is outliers, it will produce a reasonable output only with a certain probability.
+Let us briefly cover the question of the numerical evaluation of this probability.
+Let $n$ be the number of the input points and $\alpha$ be the share of the non-noise data points, $k$ be the number of points that describe a unique model, and $P$ be the desired probability of obtaining an output model that corresponds to the real object.
+The probability of sampling a single point that is an inlier is $\alpha$.
+The probability of sampling $k$ points that are all inliers is $\alpha^k$.
+The probability of sampling at least one outlier point is equal to $1 - \alpha^k$.
+Sampling even a single outlier point will result in the incorrect model.
+If $m$ subsets of points are sampled, the probability of all of them containing at least one outlier is equal to $(1 - \alpha^k)^m$.
+This formula could be equated to $1 - P$, which is the acceptable probability of not producing a feasible model: $(1 - \alpha^k)^m = 1 - P$.
+Taking logarithm from both sides yields the following result for the requred number of sampling iterations:
+$m = \frac{\ln(1 - P)}{\ln(1 - \alpha^k)}$
+
+It is evident that as the desired probability grows, the number of the necessary samplings increases.
+
+Let us first briefly describe the RANSAC algorithm according to \cite{fischler1981random}.
+
+RANSAC is a well-known algorithm for obtaining parametric objects in the presence of noise.
+Unlike methods such as least squares that fit a single model to all the data, including outliers, RANSAC generates multiple models based on small random subsets of data.
+This increases the probability of selecting points and models belonging to the real object.
+
+RANSAC algorithm for ellipsoids consists of the following steps:
+
+\begin{enumerate}
+\item \textbf{Sampling a random subset of data points.}
+The size of the subset is chosen in such a way that a unique model can be precisely fitted to it. For ellipsoids 9 points are required. 
+\item \textbf{Fitting the model to the selected subset.}
+An ellipsoid can be represented as a set of points satisfying the equation in the form of $p_1 x^2 + p_2 y^2 + \dots + p_9 z = 1$. With the aforementioned 9 points a system of linear equations is formed, that is solved with standard linear algebra.
+\item \textbf{Checking the model.}
+Since there are multiple types of quadric surfaces other than real ellipsoid, a number of additional conditions are checked, specifically the correct signs of certain invariants \cite{andrews2014type}.
+\item \textbf{Assessment of the model quality.}
+The fitness of the model is the numerical metric of how well it represents the entire point cloud. This assessment is performed by counting the number of points that lie close to the surface of the ellipsoid model. To determine this proximity, a threshold-based point counting is performed based on the algebraic distance between the points and the predicted surface. Here the simplest approach to evaluation is used, that was proposed in the classical work of Fischler and Bolles \cite{fischler1981random}.
+\item \textbf{Iterative search.}
+Steps 1-3 are repeated a number of times, and the best model is chosen by the criteria of the number of well-represented points.
+\end{enumerate}
+
+The detailed pseudocode is given in Algorithm \ref{algorithm:ransac}.
+
+\begin{algorithm}[ht!]
+    \caption{RANSAC algorithm description}
+    \label{algorithm:ransac}
+%   \SetAlgoLined
+    \KwIn{3D points, $k$ (number of points that uniquely define a model), filtering criteria (restrictions on acceptable ellipsoids), iterations number, inlier threshold} 
+
+    \KwOut{ellipsoid model}
+    \KwResult{quadric polynomial, center coordinates, radii, orientation}
+    {
+        \textbf{1. Points sampling}\;
+       $points\_samples$ = []\;
+    }
+    \For{$i\gets0$ \KwTo iterations number \KwBy $1$}{
+        Randomly select a subset of $k$ points. Save the subset into an array $points\_samples$\;
+    }
+    {
+        \textbf{2. Estimation of the parameters of the models}\;
+       $hypotheses$ = []\;
+    }    
+    \For{$i\gets0$ \KwTo iterations number \KwBy $1$}{
+        For each subset of points from $points\_samples$ form a $k \times k$\ system and solve it;
+        Calculate invariants
+
+        \eIf{invariants have proper signs}{
+        {
+        Save the corresponding polynomial $P$, matrices and parameters $M_i$ into an array of $hypotheses$\;
+        }
+        
+    }
+    {
+            Continue\;
+    }
+    }
+    {
+        \textbf{3. Model checking and validation}\;
+        $Models$ = []\;
+        $m$ = size($hypotheses$)
+    }
+    \For{$i\gets0$ \KwTo $m$ \KwBy $1$ }{
+
+        \eIf{$M_i$ semi-axes from $hypotheses$ satisfy the conditions on size and semiaxis ratio}
+        {
+            Save $Model_i$ to array $Models$
+        }
+        {
+            Continue\;
+        }
+    }
+    {
+        \textbf{4. Inliers analysis}\;
+
+        Loop through the models and find $i$ such that the model $Model_i$ maximises $\sum\nolimits_{j=1}^{m} \mathbb{I}(|P_i(x_j)| < \text{threshold})$, where $P_i(x_j)$ is the value of the polynomial number $i$ on the data point number $j$.
+
+        Return this model.
+
+        %$d$ = size($Models$)\;
+        %Define $\mathcal{P}$ matrix size $(10, m)$ where $m$  is the number of points in the point cloud, the term of the size $10$ in the matrix $\mathcal{P}$ represents the set $xyz$ points in the equation of the quadric with coefficients $1$\;
+        %Define $\mathcal{E}$ matrix size $(10, d)$ where $d$  is the number of models, the term of the size $10$ in the matrix $\mathcal{E}$ represents the set coefficients in the equation of the quadric with $xyz$ equal $1$\;
+        %Calculate a matrix $\mathcal{A}$ of size $(m, d)$, which is the scalar product of the matrices matrix  $\mathcal{P}$ and the matrix $\mathcal{E.T}$. The $\mathcal{A}$ with size  $(m, d)$  is a matrix of algebraic distances from point cloud points to ellipsoid models. each row is the distance of points to one model.\;
+    }
+    %{
+    %    \textbf{5. The analysis of outliers depends on the method}\;
+    %1. Count of inliers:
+    %Best model = $Models_{i_{\min}}$ where \;
+    %2. Sum of the distances:
+    %Best model = $Models_{i_{\min}}$ where $i_{\min} = \arg \min_{i \in \{1, \dots, d\}} \left( \sum_{j=1}^{m} A_{ij} \right)$\;
+    %3. Median distance:
+    %Best model = $Models_{i_{\min}}$ where $i_{\min} = \arg \min_{i \in \{1, \dots, d\}} \left( \text{median}\left(A_{i1}, A_{i2}, \dots, A_{im}\right) \right)$\;
+    %4. Average distance:
+    %Best model = $Models_{i_{\min}}$ where $i_{\min} = \arg \min_{i \in \{1, \dots, d\}} \left( \text{average}\left(A_{i1}, A_{i2}, \dots, A_{im}\right) \right)$\;
+    %}
+\end{algorithm}
+
+\section{Quadric Curves}
+
+\begin{figure*}[!htb]
+  \centering
+  %\begin{subfigure}{0.48\textwidth}
+  %    \centering
+      \includegraphics[width=0.62\textwidth]{images/iou_decline_noise_ellipse.png}
+      \caption{For each noise level, a number of random sets of data were generated, and the variances were calculated. A clear trend with the decrease in the Intersection over Union can be seen as the ratio between the noise variance and the major semiaxes of the ellipse grows.}
+      \label{ellipse_iou_decline}
+  %\end{subfigure}
+\end{figure*}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{cccc}
+\toprule
+\textbf{Iterations number} & \textbf{Noise 0.3} & \textbf{Noise 0.5} & \textbf{Noise 0.8} \\
+\midrule
+5 & 0.403 & 0.219 & 0.174 \\
+50 & 0.499 & 0.450 & 0.314 \\
+500 & 0.550 & 0.487 & 0.339 \\
+\bottomrule
+\end{tabular}
+\caption{The values of the Intersection over Union between the real ellipse and the predicted one for the noise of different severity (from 0.3 of maximal amplitude to 0.8).}
+\end{table}
+
+%\ref{ellipse_iou_decline}
+
+%Each of the data points of the form  is transformed into a vector
+
+Representing the parameters of the ellipse equation allows to rewrite the equation with an arbitrary scale parameter $F$ set to 1. Five such equations for a system of equations with a unique solution for the ellipse parameters if the points are in non-degenerate configuration. Finally, the center, semiaxes and the rotation angle are obtained, following \cite{abbott2009perimeter}.
+
+%Experimental results
+A number of experiments were conducted. The points of the ellipse were corrupted by additive normal noise with increasing variance. The results of the first series of experiments are presented in the Figure 1(a). As the variance of the noise becomes comparable to the size of the ellipse, the intersection over union becomes unacceptably small for the real-world scenarios.
+
+The second result is presented in the Figure 1(b). A comparison is made between the performance of the algorithm on the same data, but with different number of iterations. It could be noted that while the overall trend of the quality decrease is evident in all the curves, the orange and green curves (that correspond to 50 and 500 iterations) have lower decrease rate. Moreover, the difference between the performance with 50 and 500 iterations is not significant.
+
+After the coefficients of the polynomial that describes the ellipse as a second-order curve were obtined, the center coordinates, the semiaxes and the angle of the ellipse are expressed as follows:
+
+$$a, b = \frac{-\sqrt{2 \big(A E^2 + C D^2 - B D E + (B^2 - 4 A C) F\big)\big((A + C) \pm \sqrt{(A - C)^2 + B^2}\big)}}{B^2 - 4 A C}$$
+
+$$x = \frac{2CD - BE}{B^2 - 4AC}$$
+
+$$y = \frac{2AE - BD}{B^2 - 4AC}$$
+
+$$\theta = \arctan{(\frac{-B}{C-A})}$$
+
+\section{Quadric Surfaces}
+
+Now let us describe the ellipsoid model extraction, that is performed at each step of RANSAC, generally following\cite{groshong1989fitting}.
+
+\begin{figure*}[!htb]
+  \centering
+  %\begin{subfigure}{0.48\textwidth}
+  %    \centering
+      \includegraphics[width=0.98\textwidth]{images/DIAG.png}
+      \caption{The scheme of the experimental setup. First, an RGB and depth-images are taken. Second, a color-based filter is applied to the RGB image and the corresponding parts of the point cloud are cut. Finally, RANSAC is applied to each of the objects and the results are evaluated against the markup.}
+      \label{fig:algo}
+  %\end{subfigure}
+\end{figure*}
+
+The proof will begin with an ellipse in the XY-plane and then be extended to the ellipsoid.
+
+First, consider a set of points on the unit circle, $P_c$:
+
+\begin{equation}
+ P_c = \{ r_c \in \mathbb{R}^2 \ | \ r_c^Tr_c = 1\}. \tag{1}
+\end{equation}
+
+Let us introduce
+
+\begin{align*}
+  & t \in \mathbb{R}^2 \ - \ \text{translation vector,} \\ 
+  & s \in \mathbb{R}^2 \ - \ \text{scale vector,} \\
+  & \alpha \in [0, 2 \pi) \ - \ \text{rotation angle.} & \tag{2}
+\end{align*}
+
+With the matrix operations it is possible to transform unit circle into an arbitrary ellipse.
+
+Let us unwrap the full form of these matrices.
+
+\begin{align*}
+  & S = \begin{pmatrix}
+    s_1 & 0\\
+    0 & s_2
+  \end{pmatrix}
+  \quad \parbox{0.28\textwidth}{ $-$ scale matrix, where $s_1$ and $s_2$ are parameters of scale vector $\textbf{s}$,} \\
+  & R = \begin{pmatrix}
+    \cos(\alpha) & -\sin(\alpha) \\
+    \sin(\alpha) &  \cos(\alpha)
+  \end{pmatrix}
+  \quad \text{$-$ rotation matrix.} & \tag{3}
+\end{align*}
+
+Let $P_e$ be the points of the ellipse.
+Scaling, rotation and translation of the unit circle yields
+
+\begin{align}
+ P_e = \{RSr_c + t \ |  r_c \in P_c\}. \tag{4}
+\end{align}
+
+From $(1)$ a matrix equation of the ellipse can be obtained.
+For $r \in P_e$ the equation of the ellipse takes form of
+
+\begin{align}
+  & (r-t)^T [R^{-1}]^T [S^{-1}]^T  S^{-1}R^{-1}(r - t) = 1. \tag{5}
+\end{align}
+
+Since $R$ is an orthogonal matrix and $S$ is a diagonal matrix, $R^{-1} = R^T$ and $S^T = S$.
+
+\begin{align}
+  & (r^T - t^T) R S^{-2} R^T (r -t) = 1. \tag{6}
+\end{align}
+
+Let us introduce $V = R S^{-2} R^T$ for convenience.
+Inserting this into equation $(6)$ yields:
+
+\begin{align}
+  & r^T V r - 2t^T V r + t^T V t = 1. \tag{7}
+\end{align}
+
+Let us also introduce vector $v^T = t^T V$ and scalar $v_0 = t^TVt$.
+
+\begin{align}
+  & r^T \bigg[\frac{V}{v_0-1}\bigg] r - 2 \bigg[\frac{v^T}{v_0-1} \bigg] r + 1 = 0. \tag{8}
+\end{align}
+
+Finally, let us define a matrix $M = \frac{V}{v_0-1}$ and a vector $m^T = \frac{v^T}{v_0-1}$.
+Now it is possible to formulate the general matrix equation of an ellipse as follows:
+
+\begin{align}
+  r^T M r - 2 m^T r + 1 = 0.
+\tag{9}
+\end{align}
+
+From this equation all the parameters needed to describe an arbitrary \\ $n$-dimensional ellipsoid can be extracted, specifically translation, rotation and scaling.
+
+Let us evaluate $M^{-1}$ first.
+
+\begin{align}
+M^{-1} = \bigg[\frac{V}{v_0-1}\bigg]^{-1} = (v_0-1)V^{-1} = (v_0-1)RS^2R^T.
+\tag{10}
+\end{align}
+
+It could be observed that
+
+\begin{align}
+ t = M^{-1}m.
+\tag{11}
+\end{align}
+
+Considering the eigendecomposition of $M$ yields
+
+\begin{align*}
+  M = \frac{1}{v_0-1} V = \frac{1}{v_0-1} R S^{-2} R^T = \\
+  R\bigg[\frac{1}{v_0-1} S^{-2} \bigg] R^T = Q \Lambda Q^{-1}.
+\tag{12}
+\end{align*}
+
+From $(12)$ it could be seen that the eigenvectors matrix of $M$ is exactly the rotation matrix $R$.
+
+\begin{align}
+  R = Q.
+\tag{13}
+\end{align}
+
+Moreover, the matrix of the eigenvalues $M$ and $S$ are diagonal matrices:
+
+\begin{align}
+  \Lambda  = \frac{1}{v_0-1} S^{-2}.
+  \tag{14}
+\end{align}
+
+Thus, it becomes possible to extract the scale matrix $S$ from the eigenvalues matrix $\Lambda$.
+
+Scale matrix $S$ consists of squeezes and stretches along orthogonal axes of the ellipse, or just radii. Each eigenvalue can be presented as
+
+\begin{align}
+  \lambda_i  = \frac{1}{v_0-1} s_i^{-2}.
+\tag{15}
+\end{align}
+
+In order to extract the radii, it is necessary to find $v_0$ first.
+Since
+
+\begin{align}
+   v^TV^{-1}v & = v_0.
+\tag{16}
+\end{align}
+
+And
+
+\begin{align}
+   m^TM^{-1}m = \frac{1}{v_0-1} v_0.
+\tag{17}
+\end{align}
+
+Finally, an expression for $s_i$ can be found.
+
+\begin{align}
+   s_i = \sqrt{\frac{m^TM^{-1}m - 1}{\lambda_i}}.
+\tag{18}
+\end{align}
+
+%For practical convinience we used a bit different coeficients in matrices definition, but the main point remained the same.
+The solution holds with respect to the permutations of the axes of the ellipse.
+
+%\subsection{Notation and metrics}
+%\label{subsec:notation_and_metrics}
+
+First, let us establish the notation conventions.
+
+\begin{itemize}
+    \item $T_k$ is the markup model for each of the $K$ tomatoes. For each tomato there are 146 point clouds $PC_k^i$.
+    \item $m_j$ denotes an ellipsoid model number $j$.
+    \item $IoU(T_k, m_j)$ stands for 3D Intersection over Union of the tomato markup $T_k$ and ellipsoid model $m_j$.
+    \item $d(m_j, x_i)$ is the algebraic distance between the surface of the ellipsoid $m_j$ and data point $x_i$.
+    \item $TotRelVolErr$ for a full scene with $K$ tomatoes denotes 
+    \begin{equation*}
+        \dfrac{|\sum\limits_{k=1}^K V_{predicted} - \sum\limits_{k=1}^K V_{true}|}{\sum\limits_{k=1}^K V_{true}}
+    \end{equation*}
+\end{itemize}
+
+\section{Speeding Up Model Evaluation}
+
+%The common practice while assessing the quality of the models in RANSAC is to process one after another in a loop.
+%However, there is a way to reformulate this problem in a way that will result in reduced computational load and shorter model evaluation time.
+
+%\subsection{Fast model evaluation}
+%\label{subsec:fast_model_evaluation}
+
+% Despite RANSAC being a well-known algorithm, let us briefly outline its main steps in order to pin down the exact part of the algorithm that the optimization was applied to.
+% RANSAC is a method of obtaining parametric objects in the presence of noise.
+% In methods like Least Squares a single model is created, that is fitted to all the data, including outliers.
+% In contrast to that, in RANSAC a number of models are created with each of them relying on a small subset of data.
+% Sampling small subsets of data eventually (with a probabilistic estimate) leads to the choice of points that belong to the real object.
+
+% More specifically, RANSAC consists of the following steps.
+
+% \begin{enumerate}
+%     \item A random subset of data points is sampled. The size of the subset is supposed to be just enough to uniquely determine a single model.
+    
+%     \item The model is found that fits the sampled subset.
+%     In the case of the ellipsoids 9 points are required to determine a unique one.
+%     It should be noted that apart from an ellipsoid there are other quadric types, so a number of quadric invariants should of a proper sign.
+%     The model obtainment relies on the following.
+%     An ellipsoid could be represented as a set of points that satisfy an equation in the form of $p_1 x^2 + p_2 y^2 + \dots + p_9 z = 1$.
+%     From the 9 data points 9 equations could be obtained, leading to a properly determined system with a unique solution that could de found using simple linear algebra.
+    
+%     \item The quality of the model is evaluated in terms of how does it represent the whole input point cloud by counting the number of points that do not deviate too far from the surface of the predicted tomato.
+%     The metric for that relies on the algebraic distance, which is the value of the ellipsoid polynomial on a given point.
+%     There is a variety of approaches to calculate model fitness after that. In this work the simplest one was adopted, following the classical work by Fishler and Bolles \cite{fischler1981ransac}. The formula for the fitness for model $m_j$ and point cloud $C$ is the following: 
+%     \begin{equation*} 
+%         F=\sum\limits_{i=1}^{|C|} \mathbb{I} (d(m_j, C_i) \leq th),   
+%     \end{equation*} where $d(\cdot, \cdot)$ is the algebraic distance and $th$ is a fixed threshold.
+    
+%     \item Steps 1-3 are repeated several times and the best model is chosen.
+% \end{enumerate}
+
+According to the algorithm described above, all the data points of a point cloud that corresponds to a single tomato have to be combined with all the model hypothesis for this point cloud.
+It could be done in a simple \textit{for} loop.
+However, there is a way to speed up the computations.
+
+The ellipsoid model obtainment algorithm follows the classical approach \cite{groshong1989fitting}, while filtering out quadrics of improper type \cite{andrews2014type}.
+Since the value of the ellipsoid polynomial is equal to 
+
+\begin{equation*}
+    p_1 x^2 + p_2 y^2 + \dots + p_9 z - 1 = 0,
+\end{equation*} 
+it could be represented in the form of $(\vec{P}, \vec{X})$ for each pair of the point $x_i$ and model $m_j$, where 
+\begin{equation*}
+    \vec{P} = \begin{pmatrix} p_1 \\ \vdots \\ p_9 \\ -1 \end{pmatrix}, \quad \vec{X} = \begin{pmatrix} x^2 \\ y^2 \\ \vdots \\ z \\ 1 \end{pmatrix}
+\end{equation*}
+
+Stacking all the models in the form of $P_i$ along the vertical axis into a matrix $\mathbf{P}$ and all the points in the form of $X_j$ along the horizontal axis into a matrix $\mathbf{X}$ reduces the calculation of all the distances to a single matrix multiplication: $\mathbf{P}$ $\mathbf{X}$.
+
+$ij$-th element of this matrix will be equal to the value of the polynomial of the $j$-th ellipsoid model on the $i$-th data point.
+
+Because of the matrix $\mathbf{P}$ having size of \text{ransac\_iterations\_num} $\times$ 9 and matrix $\mathbf{X}$ having size of 9 $\times$ \text{data\_points\_num}, the asymptotic complexity of the fitness calculation for all the models is
+
+\begin{equation*}
+\Theta\text{(ransac\_iterations\_num} \times \text{data\_points\_num)}
+\end{equation*}
+
+Table 1 presents the comparison of the performance of the algorithm under different noise and with changing number of iterations. It could be noted that first, the quality decreases as the noise becomes heavier, and second, the quality improves with the increase in the number of iterations. An important finding is that the difference between 5 iterations and 50 is much more significant than the difference between 50 and 500 iterations.
+
+\begin{table*}[!htb]
+\centering
+\begin{tabular}{|c|c|c|c|}
+\hline
+Iterations number & Noise 0.3 & Noise 0.5 & Noise 0.8 \\
+\hline
+5 & 0.403 & 0.219 & 0.174 \\
+\hline
+50 & 0.499 & 0.450 & 0.314 \\
+\hline
+500 & 0.550 & 0.487 & 0.339 \\
+\hline
+\end{tabular}
+\caption{The values of the Intersection over Union between the real ellipse and the predicted one for the noise of different severity (from 0.3 of maximal amplitude to 0.8).}
+\end{table*}
+
+In this work the influence of noise on the quality of the output of RANSAC method was examined. This method was applied to the problem of second-order curve recognition, specifically an ellipse. RANSAC for ellipses was implemented in Python. It relies on the representation of the input data as zero, first and second-order monomials. It follows the standard RANSAC pipeline with inliers being counted by a binary threshold.
+A set of synthetical noisy data was generated. A number of experiments on was conducted in order to evaluate the influence of that noise on the quality of the output. The results suggest that the increase of the number of iterations leads to diminishing returns in quality. Consequently, it becomes less and less reasonable to allocate more computational resources as the convergence is being reached.
+Furthermore, the dependence of the output metric on the noise intensity was obtained in a series of tests with increasing noise. It suggests that the quality in terms of IoU drops significantly as the noise variance approaches the order of the size of the ellipse’s semiaxes.
+
+%ACCESS PAPER
+
+%Random sample consensus-based algorithm (RANSAC) is one of the standard approaches in the field of robust estimation of parametric objects.
+%There are numerous versions of RANSAC that are tailored to specific problems such as homography estimation, point cloud registration, plane estimation and others.
+%On the other hand, numerous attempts were made towards the development of modifications of RANSAC that are extremely robust to noise or highly efficient in terms of the computational demands.
+%However, the general premise of these approaches remains all the same: instead of trying to fit a single model to all the data, a number of small models is produced and evaluated in terms of their ability to describe the data.
+%In this work, an empirical study is carried out that is purposely limited to a specific application of RANSAC.
+%Particularly, the dependence of the output quality on the noise is examined for the quadric surface evaluation.
+%The data was presented in the form of 3D point clouds.
+%A method for synthetic data generation was developed, allowing to mimic the geometric principles of the point cloud formation.
+%The dependence of the error on the noise was examined on the synthetic point clouds.
+%Finally, numerical experiments on real point clouds were carried out in the agricultural setting.
+%The code can be found in the repository \url{https://github.com/aidagroup/SCUF/} and the proposed method can be used as a module \url{https://pypi.org/project/scuf/}.
+
+% The contributions of this paper are as follows:
+
+% \begin{itemize}
+%   \item A set of synthetic data was generated with ray tracing.
+%   \item A real dataset of 3D point clouds was collected in an environment emulating agricultural setting.
+%   \item The dataset was marked.
+%   \item RANSAC for quadrics was implemented in Python.
+%   \item Mutual distributions between the model quality and the inlier number were obtained.
+%   \item The dependence of the output quality on the number of iterations was assessed.
+%   \item The distribution of the algebraic distance between the sufrace and the data points was obtained.
+%   \item The dependence of the volume error on the distance from the camera to the object and on the number of algorithm iterations was assessed.
+%   %\item All in all, a method was developed that gives a precise estimate for the total volume of the group of tomatoes.
+% \end{itemize}
+
+% The rest of the paper is organized as follows.
+
+% First, the baseline RANSAC algorithm is described.
+% Second, an ellipsoid extraction method is derived.
+% After that, synthetic data generation algorithm is given with an approach that mimics the way in which the real point cloud data is obtained.
+% Then the real data obtainment and analysis is described.
+% Finally, the experimental results and their interpretations are presented.
+
+%\section{RANSAC for quadric surfaces}
+%\label{sec_ransac_for_quadric_surfaces}
+
+%\subsection{Standard RANSAC algorithm}
+%\label{subsec_ransac_algorithm}
+
+%\subsection{Quadric surface parameters obtainment}
+%\label{subsec_quadric_surface_parameters_obtainment}
+
+\begin{figure*}[h!] 
+    \centering
+%    \begin{subfigure}[b]{0.49\textwidth}
+%        \centering
+        \includegraphics[width=1.\textwidth]{images/iou_inlier_polygon_count_0.001.pdf}
+        \caption{Distribution of model IoU versus inlier number for different thresholds. No obvious trend could be observed here. However, the results in the Figure \ref{fig:static_1_count_0.001_IoU_RANSAC_Iteration} suggest the presence of IoU improvement over the number of iterations.}
+        \label{fig:iou_versus_iterations}
+ %   \end{subfigure}
+\end{figure*}
+
+\begin{figure*}[h!]   
+%    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        %\begin{subfigure}{0.48\textwidth}
+        %    \centering
+            \includegraphics[width=1.\textwidth]{images/rel_vol_inlier_polygon_count_0.001.pdf}
+            \caption{Distribution of model volume error versus inlier number for different thresholds. A vague pattern could be observed, that the models with higher inlier number correspond to lower volume error.}
+            \label{fig:verr_versus_iterations}
+ %   \end{subfigure}
+    \caption{Distribution of (a) iou and (b) error against inlier number in RANSAC.}
+  %  \label{fig:Robot}
+\end{figure*}
+
+\section{Choosing optimal hyperparameters}
+\label{subsec:hyperparameters}
+
+RANSAC has a number of hyperparameters, one of them being the threshold for the inliers if inlier counting method is used in order to assess the quality of the model.
+Manual hyperparameter picking cannot be expected to maximise the performance on a novel set of data.
+This issue was addressed with semi-automated hyperparameter search, which is a search over the threshold values in a series of numerical experiments.
+
+The target metric that was maximized during this process is IoU between the predicted tomato and the real one.
+The best fitting tomato model among $M$ models constructed from a $n$-point cloud with threshold value $t$ is the one that maximises the number of inliers:
+
+\begin{equation*}
+    \hat{T}_k = \underset{j \in [1, \cdots, M]}{\arg\max} \sum\limits_{i=1}^n \mathbb{I} (d(m_j, x_i) \leq t)
+\end{equation*}
+
+The optimal threshold value among $p$ candidates reads
+
+%\begin{multline*}
+$t^* = \underset{t \in [t_1, \dots, t_p]}{\arg\max} \dfrac{1}{K} \sum\limits_{k=1}^K IoU(T_k, \underset{j \in [1, \cdots, M]}{\arg\max}
+\sum\limits_{i=1}^n \mathbb{I} (d(m_j, x_i) \leq t))$
+%\end{multline*}
+
+In the similar manner other criteria can be used, in particular average volume, which is the metric that the end user is mostly interested in.
