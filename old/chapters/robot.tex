@@ -1,0 +1,226 @@
+\chapter{Robot}
+
+Let us describe the main design decisions behind the proposed autonomous platform.
+First of all, the target environment should be considered.
+It is a greenhouse 300 by 400 \si{m} where several hundred lines of tomatoes are growing.
+In the middle of the greenhouse there is a concrete road elevated above the main floor.
+The tomatoes are growing in lines perpendicular to this center alley.
+In order for the robot to be truly autonomous it is supposed to have two modes of locomotion, particularly on the concrete floor and on the rails.
+While the movement on the rails can be implemented in a straightforward manner, the design decision for the concrete is not as simple.
+
+On the one hand, the number of actuators necessary should be kept at minimum.
+Moreover, any kind of complicated rail system will be prone to the elements from the surrounding.
+The environment in the greenhouse is humid, and there could be grains of sand, dust, or even small puddles of water.
+On the other hand, the width of the concrete road is approximately 3 \si{m}.
+It allows the personnel to walk and manually move the machinery.
+And the control algorithms in combination with the mechanical platform have to be capable of executing sharp turns and obstacle avoidance maneuvers.
+
+After rigorous consideration and literature review Mecanum wheels-based system was designed.
+It is much more mechanically complicated than the regular car-like platform with only the front wheels steering, but it allows for the omnidirectional motion, as well as turning on the spot.
+Four wheels were placed at the corners of the robot.
+An important factor is this smoothness, or the uniformity of the concrete surface that cannot be guaranteed in the unknown environment.
+Thus, an individual suspension module for each of the wheels was designed.
+Modern greenhouses are standardized, meaning that they have the rails at a specified distance from each other.
+So the geometrical configuration of the robot was derived from that.
+The first version of the robot was designed and assembled, which was followed by the real test in a greenhouse during the tomato production.
+
+During the testing, it has become clear that despite the specifications, unknown and unpredictable circumstances can appear.
+One of the main ones was that despite the robot properly feeding in between the lines of the tomatoes, it was at times touching the tomato plant parts that were hanging lower than they should be.
+The integration of an agricultural robot should be performed as smooth as possible, meaning the non-invasive manner and keeping the greenhouse modifications to the bare minimum, as well as the workflow there.
+Thus, a decision was made to reduce the width of the robot by integration of the actuators inside the wheel itself.
+With such a modification the robot has become even more compact, minimizing the probability of the contact between it and the plant.
+
+The road wheels and the rail wheels are mounted coaxially, keeping the number of the actuators necessary down to only four.
+The motors that are used in the last (third) version of the robot are normally used in electric bikes.
+They are protected from the humidity and dust and are capable of functioning in a wide range of external conditions, including high temperature.
+Moreover, with the current mass of the robot, the perspective velocity and the limited acceleration, they are used under very moderate load, assuring their longevity and reducing the need for maintenance.
+During the design of the last version of the wheel modules, a model of mechanical wheels that was found convenient, was reproduced using more rigid type of steel.
+The wheels from the second version of the robot broke during the testing, making it necessary to develop a more sturdy version.
+All in all, the last version of the wheel modules can be used in a number of agricultural applications.
+They could be mounted to any object or machine with a few modifications, meaning only the mounting surfaces and the necessary wiring.
+The control boards of the wheel motors were chosen so that they can carry much heavier loads in terms of the current then the ones that typically appear in the robot.
+
+Regarding the main hull of the robot, it is manufactured from the aluminum tubes with square cross-section and planar aluminum elements.
+In the first version of the robot composite materials were used to manufacture the planar elements.
+Later they were changed to aluminum.
+It is heavier, but it provides rigidity to the structure of the robot.
+Moreover, it lifts the burden of active cooling of the interior of the robot by having a surface area of approximately 2 \si{m^2}.
+
+Regarding the electrical supply of the robot, lithium batteries were chosen with high energy density, and the voltage that the motors can work at without a converter.
+Six batteries approximately 5 \si{kg} each were placed in the exterior module of the robot.
+The internal space can be used to accommodate the computer and other equipment.
+The perspective power consumption of 500 \si{W} can be sustained for 12 hours.
+In order to assure smooth integration of all the equipment to the robot a DC-AC converter was installed on board providing 220 \si{V} for all the devices, allowing them to be powered by their default power units.
+While this solution is excessive in terms of the power consumption, it makes the integration of novel modules easier.
+The devices on board include the main computing module, which is a laptop with a discrete GPU, a Wi-Fi router, a set of cameras, a power converter and the charger.
+The charger was chosen such that it can charge all the batteries in three hours and can be controlled with RS-485 protocol.
+This makes it possible not only to perform the monitoring autonomously, but also charge autonomously.
+Wi-Fi router is installed on board in order for the robot to be capable of providing its own wireless network for the convenience of the user.
+While the greenhouses are often highly automated, they are also often located in remote places that lack sufficient coverage of the Internet providers.
+Moreover, it could be expensive to provide a wireless network of low latency and high bandwidth for all the greenhouse.
+This was one of the reasons why all the computations are performed on board.
+The second reason is that with onboard computations the result could be obtained instantly.
+Alternatively, an external server could be installed, but such a solution will require a high bandwidth wireless network, capable of streaming up to six FullHD videos simultaneously.
+With the current developments in the field of mobile computing devices, it is possible to perform the inference of modern neural networks and other algorithms to process data on the board in real time.
+With the speed of the robot that is acceptable from the safety standpoint and the computational capabilities of the discrete GPU the problems of disease identification and tomato volume estimation can be solved in real time as the robot drives along the line of tomatoes.
+The software on robot is pretty standard in terms of the framework and tools.
+Ubuntu 20 was used, as well as OpenCV, PyTorch, Open3D, Python, C++ and ROS2.
+The motor drivers were programmed in C.
+
+% robot:
+% - mechanical frame
+% - wheels
+% - electrical subsystem (batteries, motors)
+% - masts
+% - software
+% - cameras
+
+% Design, manufacturing and developing software for an omnidirectional agricultural robot.
+
+% The solution comes in the form of a 4-wheeled robot 
+
+% The proposed solution comprises the following modules:
+
+% \begin{itemize}
+%     \item chassis
+%     \item wheel base
+%     \item electrics
+%     \item sensing, computation and communication
+%     \item software
+% \end{itemize}
+
+% The software could in turn be broken down into the following:
+
+% \begin{itemize}
+%     \item data transport
+%     \item localization
+%     \item target CV problem
+%     \item logging and data representation
+%     \item path planning
+%     \item user interface
+% \end{itemize}
+
+% Let us describe each of the elements of the system in detail.
+
+% chassis
+
+% The main structural elements of the robot's frame are manufactured from the aluminum profile (tube with rectangular cross-section).
+% They were designed to withstand the loads that exceed the normal ones with a huge margin.
+% The rigidity is assured by a rectangular section of a composite material (alucobond) that separates the inner volume of the robot into two.
+% The tubes were connected by flat milled aluminum elements.
+% The assembly was performed using bolts and nuts, as well as rivets and bits of welding.
+% The total weight of the chassis if N \si{kg}.
+
+% wheel base
+
+% The wheels were designed to work in pairs: each omnidirectional wheel is mechanically coupled with a rail wheel
+
+% electrics
+
+% sensing, computation and communication
+
+% software
+
+% data transport
+
+% localization
+
+% target CV problem
+
+% logging and data representation
+
+% path planning
+
+% user interface
+
+% =======================================================
+%# Robot  #
+% =======================================================
+\begin{figure}[!htb]
+    \centering
+    %\begin{subfigure}{0.48\textwidth}
+    %    \centering
+        \includegraphics[width=0.8\textwidth]{images/greenhouse_top_view_fixed-2.png}
+        \caption{Image taken in a greenhouse at the top of the plants at the height near 4 meters above ground level.}
+        \label{fig_greenhouse_top_view}
+    %\end{subfigure}
+\end{figure}
+
+% =============================================
+%# II. Platform #
+% =============================================
+\section{Platform}
+\label{sec:platform}
+With a prospective weight of the robot of around 100 kilograms, an aluminum frame made of a profile with a square cross-section was designed.
+%old sentence
+%The designing of the chassis was performed with the intent to minimize the number of individually actuated elements and ended up with an omnidirectional platform with 4 identical wheel pairs.
+The design of the chassis was performed with the intent to minimize the number of individually actuated elements. 
+The result is an omnidirectional platform with 4 identical wheel pairs.
+%, where the outer one is the Mecanum wheel, and the inner one is a rail wheel with a T-shaped cross-section.
+
+\begin{figure*}[ht!] 
+    \centering
+    \begin{subfigure}[b]{0.43\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/cam_pos_scheme_2.png}
+        \caption{}
+        \label{fig_camera_positioning}
+    \end{subfigure}
+    %\hfill
+    \begin{subfigure}[b]{0.43\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/another_2.png}
+        \caption{}
+        \label{fig_robot_in_real_world}
+    \end{subfigure}
+    \caption{(a) Sketched Fields of View of the cameras. (b) Physical assembly during the data acquisition.}
+    \label{fig:Robot}
+\end{figure*}
+
+%Regarding the power supply of the robot, 6 of 24 \si{A h} 48 \si{V} LiNCA batteries were chosen, resulting in 144 \si{A h} (approximately 7 \si{kW h}) or nearly 14 hours of uptime on one charge with the prospective power consumption of 500 \si{W}.
+
+The power supply and consumption of the robot could be summarized as follows:
+\begin{itemize}
+    \item 6 $\times$ 24 \si{A h} 48 \si{V} LiNCA batteries
+    \item 144 \si{A h} (approximately 7 \si{kW h})
+    \item Nearly 14 hours of uptime on one charge with the power consumption of 500 \si{W}
+\end{itemize}
+
+One of the crucial decisions that had to be made was the positioning of the host computer for the NNs inference.
+The final design of the robot included a relatively powerful computer on board, see section \ref{sec_training}.
+%old sentence
+%It could seem reasonable to do that the other way, but separating the whole system into two parts, namely the robot and the external server, will require the installation of the latter, as well as providing coverage of the whole greenhouse with a wireless network, capable of streaming multiple at FullHD videos in real-time.
+It would be reasonable to do this in another way – by dividing the system into a robot and an external server.
+This would bring the problem of providing coverage of the entire greenhouse with a wireless network capable of broadcasting a number of (at least) FullHD videos in real-time.
+
+\section{Overview of the solution}
+\label{Overview of the solution}
+For the problem of tomato greenhouse monitoring the main requirements for the vision system are the following.
+
+First, the combination of the Fields of View (FoV) of the cameras should cover the entire height of the plants, from the tomatoes to the tips of the vegetation.
+Diseases, parasites, and damage can occur anywhere on the plant.
+This requirement is addressed by installing a number of cameras, their proper positioning, and their parameters.
+Three web cameras were utilized.
+The sketch of this setup is given in Figure \ref{fig_camera_positioning}, and the real assembly is given in Figure \ref{fig_robot_in_real_world}.
+At this point, only one side is covered by combined FoVs, but it is planned to replicate that and cover the other side as well.
+
+Second, the image processing should be performed in real-time. 
+Ideally, the robot is expected to spend all the time in the field moving. 
+With real-time processing, it is possible for the workers to rapidly examine specific rows of tomato plants.
+The robot should be capable of observing the same part of the plant from different locations, meaning that the data processing should happen in real-time with a certain overlap in the frames.
+
+During the design of the vision subsystem, the following assumptions were \\ adopted.
+In the initial testing, the robot was moving at a speed of 0.26 \si{m/s}, which is a safe value for indoor applications.
+Considering potential acceleration for the sake of faster monitoring, an upper-speed limit could be set to 0.5 \si{m/s}.
+The horizontal FoV for the chosen optics covers 1.07 \si{m}.
+Thus, moving an object through it from left to right takes nearly 2 \si{s}.
+To assure the 5-fold overlap, each of the cameras has to capture an image at least once every 0.4 \si{s}.
+That results in the requirement for the processing speed of 8 frames of 1056 $\times$ 1056 pixels per second.
+This requirement is met with a huge margin.
+
+%TODO FOR LATER:
+%- INSERT BLUEPRINTS, PICTURES
+%- 
+%- 
+%- 
+%- 

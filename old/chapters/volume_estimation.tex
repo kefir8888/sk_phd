@@ -1,0 +1,974 @@
+\chapter{Volume estimation}
+
+% \section{Proposed Algorithm}
+
+% scheme of the method
+
+%\section{Experimental setup}
+%\label{sec_results}
+
+%\subsection{Metrics}
+%\label{subsec_metrics}
+
+The experiments with the real data were conducted in accordance with the scheme in the Figure \ref{fig:algo}: RANSAC for ellipsoids is applied after cutting a part of the point cloud that consists of the object only.
+
+The metrics that were used to assess the method's performance are the following.
+First, it is the Intersection-over-Union between the real ellipsoid and the output of the algorithm.
+Second, it is the ratio between the predicted and real volume of the ellipsoid.
+Finally, it is the relative error in volume for the whole set of ellipsoids:
+\begin{align*}
+  \dfrac{\sum V_{predicted} - \sum V_{real}}{\sum V_{real}}. \\
+  \tag{22}
+  \end{align*}
+
+%\blue{
+The hyperparameters used are the following:
+\begin{itemize}
+    \item Threshold for the algebraic distance is 0.001
+    \item Maximal iterations number is 10000. The results for the other iteration numbers are presented in the tables below
+    \item Maximal acceptable ratio between the biggest and the smallest semiaxis is 2 (used for filtering)
+    \item Maximal ratio between the maximal semiaxis of the ellipsoid and the maximal distance between the data points is 5 (used for filtering)
+\end{itemize}
+%}
+
+\begin{figure}[!htb]
+  \centering
+  \includegraphics[width=0.8\textwidth]{images/ransac_synt2}
+  \caption{Output of RANSAC on a point cloud from the real data. Notice that despite the complexity of the data, i.e. small section of the ellipsoid covered, non-uniform density, surface distortion — the output is reasonably good. This exact sample was cherry picked for demonstration purposes.}
+\label{fig:real_data_output}
+%\end{subfigure}
+\end{figure}
+
+\begin{figure}[!htb]
+  \centering
+  %\begin{subfigure}{0.48\textwidth}
+  %    \centering
+      \includegraphics[width=0.8\textwidth]{images/iou_inlier_normal_noise.png}
+      \caption{Mutual distribution of IoU and number of inliers for full ellipsoids with different noise amplitudes. A trend can be observed that generally the more inliers there are for the model, the higher the IoU with the true ellipsoid is.}
+      \label{fig:iou_inlier_normal_noise}
+  %\end{subfigure}
+\end{figure}
+
+Figure \ref{fig:iou_inlier_normal_noise} presents mutual distributions of a hypothesis IoU versus number of inliers for that model for different noise levels.
+For very strong noise, the constellation of dots in the plot appears as an almost vertical blob.
+It is bounded from the right, meaning that no model has lots of inliers.
+Consequently, the influence of the stochastic nature of the algorithm can lead to unsatisfactory results.
+
+On the other hand, with light noise a clear trend can be observed: with the growth of the number of inliers the quality in terms of IoU grows as well.
+%Similar trend can be observed in terms or Relative Volume Error, see Figure \ref{fig:rve_inlier_normal_noise}.
+
+\section{Experimental Results}
+
+\begin{table*}[!htb]
+  \centering
+  \begin{tabular}{lrrrrrrrr}
+  \toprule
+  \multirow{2}{*}{Iterations} & \multicolumn{4}{c}{Full ellipsoids with noise} & \multicolumn{4}{c}{Ellipsoid segments with noise} \\
+  \cmidrule(lr){2-5} \cmidrule(lr){6-9}
+   & 0.0 & 0.01 & 0.26 & 0.41 & 0.0 & 0.01 & 0.03 & 0.05 \\
+  \midrule
+  10 & 1.0 & 0.9518 & 0.5428 & 0.5238 & 0.9978 & 0.2403 & 0.1582 & 0.1022 \\
+  100 & 1.0 & 0.9523 & 0.5714 & 0.5569 & 0.9989 & 0.3079 & 0.1555 & 0.0969 \\
+  1000 & 1.0 & 0.9427 & 0.5497 & 0.5219 & 0.9995 & 0.3885 & 0.2086 & 0.1333 \\
+  \bottomrule
+  \end{tabular}
+  \caption{Average IoU with different number of iteration (10, 100 and 1000) on different data: full noised ellipsoids and noised ellipsoid segments, generated with ray tracing}
+  \label{tabularx:iou_tables}
+  \end{table*}
+
+\begin{table*}[!htb]
+  \centering
+  \begin{tabular}{lrrrrrrrr}
+  \toprule
+  \multirow{2}{*}{Iterations} & \multicolumn{4}{c}{Full ellipsoids with noise} & \multicolumn{4}{c}{Ellipsoid segments with noise} \\
+  \cmidrule(lr){2-5} \cmidrule(lr){6-9}
+    & 0.0 & 0.01 & 0.26 & 0.31 & 0.0 & 0.01 & 0.03 & 0.05 \\
+  \midrule
+  10 & 0.0 & 0.0071 & 0.5214 & 0.7591 & 0.0008 & 0.2173 & 0.6498 & 0.6690 \\
+  5000 & 0.0 & 0.0267 & 0.5527 & 0.1307 & 0.0 & 0.1394 & 1.7770 & 0.5463 \\
+  10000 & 0.0 & 0.0091 & 0.0742 & 0.0336 & 0.0 & 0.1394 & 0.3276 & 0.4036 \\
+  \bottomrule
+  \end{tabular}
+  \caption{Average Relative Volume Error with different number of iteration (10, 100 and 1000) on different data: full noised ellipsoids and noised ellipsoid segments, generated with ray tracing}
+  \label{tab:vol_table}
+  \end{table*}
+
+%\section{Results}
+%\label{sec_results}
+
+\begin{table}[!htb]
+  \centering
+  \begin{tabular}{|c|c|c|}
+      \hline
+      \textbf{Iteration number} & \textbf{Precision} & \textbf{Recall} \\
+      \hline
+      1250  & 0.5346 & 0.8564 \\
+      2500  & 0.5611 & 0.8445 \\
+      5000  & 0.5697 & 0.8601 \\
+      7500  & 0.5705 & 0.8623 \\
+      10000 & 0.5798 & 0.8856 \\
+      \hline
+  \end{tabular}
+  \caption{Precision and Recall values for inliers for different number of iterations.}
+  \label{tab:precision_recall}
+\end{table}
+
+\begin{figure}[!htb]
+  \centering
+  %\begin{subfigure}{0.48\textwidth}
+  %    \centering
+      \includegraphics[width=0.8\textwidth]{images/iou_inlier_segment_normal_noise.png}
+      %\caption{iou inlier segment normal noise 0.1}
+      \caption{Mutual distribution of IoU and number of inliers for segments of ellipsoids with different noise amplitudes. In comparison with the Figure \ref{fig:iou_inlier_normal_noise} the trend is much less prominent.}
+      \label{fig:iou_inlier_segment_normal_noise}
+  %\end{subfigure}
+\end{figure}
+
+It could be noted that in the transition from the full ellipsoids to the segments, that are closer to the real data, the mutual distribution is blurred significantly, see Figure \ref{fig:iou_inlier_segment_normal_noise}.
+
+\begin{figure}[!htb]
+  \centering
+  %\begin{subfigure}{0.48\textwidth}
+  %    \centering
+      \includegraphics[width=0.8\textwidth]{images/rve_inlier_normal_noise.png}
+      \caption{Mutual distribution of Relative Volume Error (RVE) and number of inliers for full ellipsoids with different noise amplitudes. With the growth of the number of inliers the average error declines.}
+      \label{fig:rve_inlier_normal_noise}
+  %\end{subfigure}
+\end{figure}
+
+Similar trend, but with the declining relative volume error can be observed on the Figure \ref{fig:rve_inlier_normal_noise}.
+For strong noise the number of inliers is small and the overall volume error is high, and for the light noise it is the exact opposite.
+
+It could be observed that there it a noisy, but distinct trend of the increase in the model quality with the increase of the inlier number.
+However, due to the stochastic nature of the algorithm, it is not guaranteed that the best in terms of the IoU model will be the same that has the biggest inlier number.
+
+%\blue{
+Table \ref{tab:precision_recall} presents precision and recall for the inliers for the best fitted models.
+An improvement in the quality can be observed as the number of iterations grows.
+However, it is associated with a growing computtional burden, so a balance should be found for real applications between the quality of the output and the computational demands of the algorithm.
+%}
+
+Now let us observe the dependence of the quality of the best model as the number of algorithm iterations increase.
+
+The results for the different number of iterations are presented in the Table \ref{tabularx:iou_tables}.
+
+\begin{figure}[!htb]
+  \centering
+  %\begin{subfigure}{0.48\textwidth}
+  %    \centering
+      \includegraphics[width=0.8\textwidth]{images/segment_normal_noise_count_0.1_IoU_RANSAC_Iteration}
+      \caption{Dependence of IoU of the best model from the number of iterations for synthetic segments for different levels of noise. It is worth noting that overall with the growth of the iteration number there is a slight, but noticeable improvement in IoU.}
+      \label{fig:segment_normal_noise_count_0.1_IoU_RANSAC_Iteration}
+  %\end{subfigure}
+\end{figure}
+
+\begin{figure}[!htb]
+  \centering
+  %\begin{subfigure}{0.48\textwidth}
+  %    \centering
+      \includegraphics[width=0.8\textwidth]{images/normal_noise_count_0.1_IoU_RANSAC_Iteration}
+      \caption{Dependence of IoU of the best model from the number of iterations for full synthetic ellipsoids for different levels of noise. x axis is logarithmic for better view. For light noise the IoU grows almost to 1.0 very rapidly (black line). For heavy noise the growth is much slower (green line).}
+      \label{fig:normal_noise_count_0.1_IoU_RANSAC_Iteration}
+  %\end{subfigure}
+\end{figure}
+
+\begin{figure}[!htb]
+  \centering
+  %\begin{subfigure}{0.48\textwidth}
+  %    \centering
+      \includegraphics[width=0.8\textwidth]{images/res55.png}
+      \caption{Distributions of Relative Volume Error for different distances from the camera for the point clouds filmed with 55 degrees between the camera direction and line of tomatoes}
+      \label{fig:55res}
+  %\end{subfigure}
+\end{figure}
+
+The best depth perception for Intel RealSense D435i is declared to belong to the range between 0.6 and 6 meters.
+However, Figure \ref{fig:55res} as well as Figure \ref{fig:90res} suggest that the variance in the distribution in the relative volume error grows significantly beyond approximately 1.5 meters.
+It can be explained by the decline in the infrared pattern density as the distance from the emitter increases.
+
+%Tomatoes that are further than N meters were disregarded due to the poor data quality and the real greenhouse environment, where horizontal camera-to-tomato distance is limited by N meters.
+
+%Tomatoes that are further than N meters were disregarded due to the poor data quality and the real greenhouse environment, where horizontal camera-to-tomato distance is limited by N meters.
+
+The real applications are bounded by even more strict constraints in terms of the distance between the camera and the object.
+Since the distance between the rows of the tomatoes is limited by approximately 2 \si{m}, and the vegetation should be taken into account, the distance between the camera and the plant in the real environment is supposed to be from 0.5 to 1.5 \si{m}.
+
+\begin{figure}[!htb]
+  \centering
+  %\begin{subfigure}{0.48\textwidth}
+  %    \centering
+      \includegraphics[width=0.8\textwidth]{images/res90.png}
+      \caption{Distributions of Relative Volume Error for different distances from the camera for the point clouds filmed with 55 degrees between the camera direction and line of tomatoes}
+      \label{fig:90res}
+  %\end{subfigure}
+\end{figure}
+
+\begin{figure}[!htb]
+  \centering
+  %\begin{subfigure}{0.48\textwidth}
+  %    \centering
+      \includegraphics[width=0.8\textwidth]{images/normal_noise_total_rel_vol_iter_plot_log.pdf}
+      \caption{Dependence of the Total Relative Volume Error (sum over all the ellipsoids) on the number of iterations of RANSAC (logarithmic scale) for full noised synthetic ellipsoids. All the ellipsoids in the set have volume in the same order of magnitude. The noise level is 0.41.}
+      \label{fig:normal_noise_total_rel_vol_iter_plot_log}
+  %\end{subfigure}
+\end{figure}
+
+\begin{figure}[!htb]
+  \centering
+  %\begin{subfigure}{0.48\textwidth}
+  %    \centering
+      \includegraphics[width=0.8\textwidth]{images/errorbars.pdf}
+      \caption{For each of the objects from the real dataset the volume was estimated for each of the point clouds.
+      The average volumes with the error bars are listed along the axis represenating the distance from the camera to the object.
+      The true volume for each of the tomatoes is marked with a thick black dot.}
+      \label{fig:errorbars}
+  %\end{subfigure}
+\end{figure}
+
+\begin{figure}[!htb]
+  \centering
+  %\begin{subfigure}{0.48\textwidth}
+  %    \centering
+      \includegraphics[width=0.8\textwidth]{images/rs-55_pcds_total_rel_vol_iter_plot.pdf}
+      \caption{Dependence of the Total Relative Volume Error (sum over all the ellipsoids) on the number of iterations of RANSAC (logarithmic scale) for real data for different threshold values. The error clearly declines with the increase of the number of iterations.}
+      \label{fig:wood_rs-55_pcds_total_rel_vol_iter_plot}
+  %\end{subfigure}
+\end{figure}
+
+\begin{figure}[!htb]
+  \centering
+  %\begin{subfigure}{0.48\textwidth}
+  %    \centering
+      \includegraphics[width=0.8\textwidth]{images/wood_hist.pdf}
+      \caption{The distribution of the relative volume error for all the tomatoes from the dataset. The mean value is 1.0020. No additional scaling was applied.}
+      \label{fig:wood_hist}
+  %\end{subfigure}
+\end{figure}
+
+It could be seen from the Figure \ref{fig:wood_hist} that despite high variance in the relative volume error the average measured volume matches the real one very precisely.
+This result suggests that the method considered is applicable even under fairly noisy circumstances.
+
+%\blue{
+Figure \ref{fig:errorbars} presents the results of averaging the estimated volumes among all the point clouds for each tomato.
+The real volume is marked with a black dot.
+Despite high variance, the average volume is estimated with acceptable precision.
+%}
+
+%TODO: INSERT PLOT WITH IoU vs iter num for different noises
+
+%TODO: INSERT IoU vs iter num for real tomatoes
+
+%TODO: INSERT TABLE FROM THE END OF THE LAST PAGE OF THE PDF FROM THE DISCUSSION 31.10.2024
+
+%\section{Conclusion}
+%\label{sec_conclusion}
+
+%\subsection{Conclusion}
+%\label{sec_conclusion}
+
+In this work an empirical study is carried out, aimed at examining the influence of noise on the performance of RANSAC method on quadric surfaces.
+A method for synthetic data generation with ray tracing was developed.
+The dependence of the error on the noise was examined on the synthetic point clouds.
+Experiments on the real point clouds were carried out in the agricultural setting.
+RANSAC for quadric surfaces was implemented in Python.
+
+As one may expect, the results suggest that noisy data is more challenging for the algorithm.
+The numerical evaluation of this phenomenon is given in the Results section \ref{sec:results}.
+All in all, the qualitative findings are the following:
+\begin{itemize}
+  \item The number of inliers for the model is correlated with its quality in terms of the output metric. This correlation becomes less prominent with the growth of the noise.
+  \item On the challenging data the number of iterations plays crucial role in the quality improvement, see Figure \ref{fig:normal_noise_total_rel_vol_iter_plot_log} and \ref{fig:segment_normal_noise_count_0.1_IoU_RANSAC_Iteration} for results on synthetic data.
+  \item IoU cannot be used as a single criteria for quality assessment, see Figure \ref{fig:normal_noise_count_0.1_IoU_RANSAC_Iteration} and Figure \ref{fig:segment_normal_noise_count_0.1_IoU_RANSAC_Iteration} for a comparison of the plots for different noise levels.
+  \item The quality of the output model declines with the growth of the distance from the sensor to the object. For the specific type of the camera that was used the cutoff distance that bounds the zone of reliable performance is nearly 1.5 meters.
+  \item It was thus shown, that for the real data, which is the most challenging, RANSAC gives a high variance in the volume, but very small average error, which makes it applicable to the problem of yield estimation in the agricultural setting, see Figure \ref{fig:wood_rs-55_pcds_total_rel_vol_iter_plot}. The example of the algorithm's output is presented in the Figure \ref{fig:real_data_output}.
+\end{itemize}
+
+%All in all, a method was developed that gives precise estimate for the total volume of the group of tomatoes.
+
+%SAME ALG + DETECTION (MIPT CONFERENCE)
+
+%Ellipsoidal objects volume estimation by combining detection with RANSAC
+
+% A method of ellipsoid volume estimation by noisy point cloud data is proposed. It relies on the combination of RGB and depth data. Specifically, it consists of two parts: detecting the objects in the RGB image, that is registered to the point cloud from a depth camera, and fitting ellipsoids to the corresponding subsets of that point cloud. The proposed method was tested on synthetic data and real data in agricultural context. Its main feature is that it is suitable for the real-world environments. For industrial applications, such as modern tomato greenhouses, it means that the tomatoes are not supposed to be manually picked.
+% Volume estimation is a fundamental problem that has to be solved in a variety of real-world scenarios, ranging from agriculture \cite{nakaguro2015volumetric}, \cite{chaivivatrakul_crop} to medicine \cite{rodriguez2008prostate}. In contrast to many modern approaches, the proposed one does not rely on the contrastive background or an expensive setup with multispectral cameras. For the real experiments Intel RealSense D435i camera was used. The method's performance was evaluated on both synthetic and real data in terms of the Intersection over Union (IoU) between the predicted ellipsoid and the real one, volume error and processing time. The dependence of the output quality on the parameters, such as number of RANSAC iterations and inlier threshold, is presented. The method is compared with three other modern algorithms, showing superior performance on the complex real-world data. It is lightweight enough to be used on an autonomous agricultural robot with a user-grade laptop on board. To our knowledge there are no works that combine NN-based detection with robust volume estimation.
+
+% Figure 1. Proposed algorithm. First, RGB and point cloud data are obtained with distinct, but registered sensors. Second, NN-based detection is performed and point clouds corresponding to individual objects are extracted. Finally, RANSAC algorithm is used to fir the proper ellipsoid models to them, consisting of repetitive subsampling and model evaluation.
+
+% The contributions of this paper are as follows. A dataset of point clouds with tomatoes was collected in the environment closely mimicking the real greenhouse. The dataset was marked, meaning that the tomato models were hand-fitted to the point clouds. Synthetic data was generated. RANSAC for quadric surfaces was implemented in Python. A pipeline consisting of YOLO \cite{redmon2016yolo} detection with subsequent point cloud cropping and RANSAC inference was realized. Numerical experiments were conducted. A comparison with modern approaches to ellipsoid estimation was made. It was thus shown that good enough performance could be achieved with the means of an autonomous robot and relatively cheap camera setup. 
+% The data was recorded data using both RGB and Depth channels, synchronized via standard RealSense SDK methods. Each tomato was physically marked for identification during post-processing.
+% The lighting conditions were consistent, as the room was equipped with a window that blocks infrared light, and the overcast weather prevented direct sunlight.
+% The proposed method was compared with three modern approaches on both synthetic and real data from the agricultural context. The first one is \cite{zhao2024bayesian}. In this work a Bayesian approach to ellipsoid fitting was taken, that generalizes well even to higher dimensions. This algorithm maximizes the probability of the output model given the data, thus being robust to noise and out-of-distribution points. The second one is the implementation of Matlab Ellipsoid Fit \cite{yury_ellipsoidfit}. In this work the problem of ellipsoid obtainment is approached with Linear Least Squares (LLSQ), followed by bringing the ellipsoid to the form of a quadric surface. Finally, the proposed approach was compared with \cite{han2023ellipsoid}. The authors noted that in a lot of RANSAC implementations either the geometrical or algebraic distance was used in order to evaluate the quality of the model. An alternative approach was proposed, relying on the combination of the axial and Sampson distance, which gave high robustness against outliers and competitive processing time.
+% %The results are presented in the Tables 2, 3, 4 and 5.
+% First, let us observe the metrics for different number of iterations for the best threshold are presented in the Table \ref{tab:ransac_iterations_real}.
+
+% % Iterations	IoU	Volume Error
+% % 10	0.2125	0.5084
+% % 100	0.2145	0.3587
+% % 1000	0.2164	0.2459
+
+% % Table 1. IoU and Volume Error for different number of RANSAC iterations on real data
+
+% \begin{table}[h!]
+% \centering
+% \caption{IoU and Volume Error for different number of RANSAC iterations on real data}
+% \label{tab:ransac_iterations_real}
+% \begin{tabular}{ccc}
+% \hline
+% \textbf{Iterations} & \textbf{IoU} & \textbf{Volume Error} \\
+% \hline
+% 10    & 0.2125 & 0.5084 \\
+% 100   & 0.2145 & 0.3587 \\
+% 1000  & 0.2164 & 0.2459 \\
+% \hline
+% \end{tabular}
+% \end{table}
+
+% Let us compare the performance of the proposed method with the other algorithms, see Tables \ref{tab:ellipsoid_comparison}, \ref{tab:seg_clean_noise} and \ref{tab:realdata}.
+
+% \begin{table}[ht]v
+% \centering
+% \begin{tabular}{|l|ccc|ccc|}
+% \hline
+% \textbf{Method} & \multicolumn{3}{c|}{\textbf{Clean Models}} & \multicolumn{3}{c|}{\textbf{Normal Noise}} \\
+%  & IoU & Vol. Error & Time [s] & IoU & Vol. Error & Time [s] \\
+% \hline
+% Bayfit & 0.0078 & 0.1164 & 1.5849 & 0.0104 & $2.88\times10^{25}$ & 0.3709 \\
+% CAS & 1.0000 & 0.0000 & 0.0037 & 0.7202 & 0.1640 & 0.0174 \\
+% Matlab Fit & 1.0000 & 0.0000 & 0.0003 & 0.8024 & 0.0925 & 0.0003 \\
+% Ours & 1.0000 & 0.0000 & 0.0297 & 0.5101 & 1.1700 & 0.0297 \\
+% \hline
+% \end{tabular}
+% \caption{Comparison of algorithms on clean and noisy full ellipsoids.}
+% \label{tab:ellipsoid_comparison}
+% \end{table}
+
+% \begin{table}[ht]
+% \centering
+
+% \begin{tabular}{|l|c|c|c|c|c|c|}
+% \hline
+% \textbf{Method} & \textbf{IoU} & \textbf{V err} & \textbf{Time} & \textbf{IoU} & \textbf{V err} & \textbf{Time} \\
+% %\textbf{ Normal Noise} & \multicolumn{3}{c|}{} & \multicolumn{3}{c|}{} \\
+% \hline
+% Bayfit & 0.0005 & 0.3985 & 1.1149 & N/A & N/A & N/A \\
+% CAS & 0.9899 & 0.01 & 0.0027 & 0.2054 & 4.0796 & 0.0029 \\
+% Matlab Fit & 0.8447 & 20.8465 & 0.0006 & 0.1387 & 0.426 & 0.0005 \\
+% Ours & 0.9697 & 0.0192 & 0.0287 & 0.1985 & 2.1242 & 0.0298 \\
+% \hline
+% \end{tabular}
+% \caption{Table 3. The comparison of the algorithms on Segment Clean data and Segment Normal Noise. N/A means that the algorithm did not provide a result}
+% \label{tab:seg_clean_noise}
+
+% \vspace{1em}
+
+% \begin{tabular}{|l|c|c|c|}
+% \hline
+% \textbf{Real Data} & \textbf{IoU} & \textbf{Volume Error} & \textbf{Time} \\
+% \hline
+% Bayfit & 0.0185 & 0.9629 & 0.0657 \\
+% CAS & 0.1501 & 18.3553 & 0.0037 \\
+% Matlab Ellipsoid Fit & 0.0003 & 7.1066 & 0.0010 \\
+% RANSAC (ours) & 0.2237 & 0.7617 & 0.0254 \\
+% \hline
+% \end{tabular}
+% \caption{Table 4. Real Data Results and Iterations}
+% \label{tab:realdata}
+
+% \vspace{1em}
+
+% \begin{tabular}{|l|c|c|c|c|c|c|}
+% \hline
+% \textbf{Model} & \textbf{Lang} & \textbf{Clean} & \textbf{Noisy} & \textbf{Segm} & \textbf{Noisy Seg} & \textbf{Real} \\
+% \hline
+% Bayfit, 2024 & Matlab & Yes & Yes & Yes & No & Yes \\
+% CAS, 2022 & Matlab & Yes & Yes & Yes & Yes & Yes \\
+% Matlab, 2018 & Ma/Py & Yes & Yes & Yes & Yes & Yes \\
+% Ours, 2024 & Python & Yes & Yes & Yes & Yes & Yes \\
+% \hline
+% \end{tabular}
+% \caption{Table 5. Summary of the methods. Yes and No for different data types denote if the method is working with them or not}
+% \label{tab:summary_methods}
+
+% \end{table}
+
+% On some of the synthetic data the proposed method performs worse than the other methods, see Normal Noise IoU, where Matlab Ellipsoid Fit gives higher IoU. However, on the most challenging sort of data, which is the real ellipsoids, the proposed method shows superior performance in terms of both IoU and volume error. Moreover, it could be noted that the average volume for a group of tomatoes closely matches real values, despite high variance in individual outputs, see Figure 2.
+
+% Figure 2.  Distribution of the predicted volume divided by the real
+% volume for all the tomatoes in the real data. Despite the variance
+% being considerable, the mean value is nearly 1.05, which means
+% that the main metric that the potential user will be interested in,
+% which is the volume estimation precision, is high.
+
+% Overall, a method of ellipsoid volume estimation was developed and tested in the real environment. Synthetic data was generated with gradual increase in complexity. A real dataset of point clouds and corresponding RGB images was gathered and marked. The dependence of the quality of the method's output on the iterations number was evaluated in numerical experiments, showing minimal average relative volume estimation error of 0.25. The comparison of the method with three alternative approaches was made, showing superior performance on the real data both in terms of IoU and volume error. It was thus shown that the proposed method can be applied to the real-world ellipsoid volume estimation.
+
+% References
+%     1. Nakaguro Y. et al. Volumetric 3D Reconstruction and Parametric Shape Modeling from RGB-D Sequences //Image Analysis and Processing—ICIAP 2015: 18th International Conference, Genoa, Italy, September 7-11, 2015, Proceedings, Part I 18. – Springer International Publishing, 2015. – P. 500-516. 
+%     2. Chaivivatrakul S. et al.TOWARDS AUTOMATED CROP YIELD ESTIMATION.
+%     3. Rodriguez E. et al. Prostate volume estimation using the ellipsoid formula consistently underestimates actual gland size //The Journal of urology. – 2008. – V. 179. – №. 2. – P. 501-503.
+%     4. Redmon J. et al. You only look once: Unified, real-time object detection //Proceedings of the IEEE conference on computer vision and pattern recognition. – 2016. – P. 779-788.
+%     5. Zhao M. et al. A Bayesian Approach Toward Robust Multidimensional Ellipsoid-Specific Fitting //IEEE Transactions on Pattern Analysis and Machine Intelligence. – 2024.
+%     6. Yury. Ellipsoid fit // MATLAB Central File Exchange : [Electronic resource]. URL: https://www.mathworks.com/matlabcentral/fileexchange/24693-ellipsoid-fit (accessed: 02.03.2025).
+%     7. Han M. et al. Robust ellipsoid fitting using combination of axial and Sampson distances //IEEE Transactions on Instrumentation and Measurement. – 2023. – V. 72. – P. 1-14.
+
+%\begin{abstract}
+A method of ellipsoid volume estimation by noisy point cloud data is proposed.
+It relies on the combination of RGB and depth data.
+Specifically, it consists of two parts: detecting the objects in the RGB image, that is registered to the point cloud from a depth camera, and fitting ellipsoids to the corresponding subsets of that point cloud.
+The proposed method was tested on synthetic data and real data in agricultural context.
+Its main feature is that it is suitable for the real-world environments.
+For industrial applications, such as modern tomato greenhouses, it means that the tomatoes are not supposed to be manually picked.
+In contrast to many modern approaches, the proposed one does not rely on the contrastive background or an expensive setup with multispectral cameras.
+For the real experiments Intel RealSense D435i camera was used.
+The method's performance was evaluated on both synthetic and real data in terms of the Intersection over Union (IoU) between the predicted ellipsoid and the real one, volume error and processing time.
+The dependence of the output quality on the parameters, such as number of RANSAC iterations and inlier threshold, is presented.
+The method is compared with three other modern algorithms, showing superior performance on the complex real-world data.
+It is lightweight enough to be used on an autonomous agricultural robot with a user-grade laptop on board.
+%\end{abstract}
+
+%\section{Introduction}
+%\label{sec:intro}
+
+\begin{figure*}[!htb]
+    \centering
+    %\begin{subfigure}{0.48\textwidth}
+    %    \centering
+        \includegraphics[width=0.98\textwidth]{images/diagram_final.pdf}
+        \caption{Proposed algorithm. First, RGB and point cloud data are obtained with distinct, but registered sensors. Second, NN-based detection is performed and point clouds corresponding to individual objects are extracted. Finally, RANSAC algorithm is used to fit the proper ellipsoid models to them, consisting of repetitive subsampling and model evaluation.}
+        \label{fig:algo_nn}
+    %\end{subfigure}
+\end{figure*}
+
+\begin{figure}[!h]
+    \centering
+    %\begin{subfigure}{0.48\textwidth}
+    %    \centering
+        \includegraphics[width=0.8\textwidth]{images/greenhouse.jpg}
+        \caption{Tomato plants viewed from the side. The image was taken using the robot's onboard camera.}
+        \label{fig:greenhouse}
+    %\end{subfigure}
+\end{figure}
+
+\begin{figure}[!htb]
+    \centering
+    %\begin{subfigure}{0.48\textwidth}
+    %    \centering
+        \includegraphics[width=0.8\textwidth]{images/tomatoes.png}
+        \caption{Point cloud with two tomatoes. It could be noted that the surface appears noisy and uneven.}
+        \label{fig:tomat}
+    %\end{subfigure}
+\end{figure}
+
+%\subsection{Mathematics}
+
+%Please number all of your sections and displayed equations as in these examples:
+%\begin{equation}
+%  E = m\cdot c^2
+%  \label{eq:important}
+%\end{equation}
+%and
+%\begin{equation}
+%  v = a\cdot t.
+%  \label{eq:also-important}
+%\end{equation}
+
+%\section{Proposed method}
+%\label{sec:method}
+
+\section{Combining YOLO with RANSAC for quadric surfaces}
+\label{subsec:combining_yolo_with_ransac_for_quadric_surfaces}
+
+The tomato position, orientation and volume estimation consists of the following steps.
+First, the tomato detection via YOLOv8n is performed. Second, the corresponding point clouds are cropped from the original point cloud.
+It is worth noting, that in order to do that properly, the RGB and depth sensors have to be precisely mutually calibrated in order to exclude any offset during the cropping process.
+
+Finally, RANSAC for quadric surfaces is applied in order to extract the parametric description of the tomato as an ellipsoid.
+The detailed scheme of the proposed method is given in the Figure \ref{fig:algo_nn}.
+
+\begin{figure}[!htb]
+    \centering
+    %\begin{subfigure}{0.48\textwidth}
+    %    \centering
+        \includegraphics[width=0.8\textwidth]{images/static_1_simple_rel_vol_iter_plot_1_tomato.pdf}
+        \caption{Relative volume error for a single tomato for a variety of thresholds. It could be noted that the ones in the order of 0.001 produce the best results}
+        \label{fig:static_1_simple_rel_vol_iter_plot_1_tomato}
+    %\end{subfigure}
+\end{figure}
+
+\begin{figure}[!htb]
+    \centering
+    %\begin{subfigure}{0.48\textwidth}
+    %    \centering
+        \includegraphics[width=0.8\textwidth]{images/static_1_total_rel_vol_iter_plot.pdf}
+        \caption{Relative volume error for the whole real dataset by the number of RANSAC iterations. With certain thresholds the overall quality of the output increases as the number of iterations grows}
+        \label{fig:static_1_total_rel_vol_iter_plot}
+    %\end{subfigure}
+\end{figure}
+
+%TODO: DESCRIBE ALL THE NUMERICAL EXPERIMENTS (MOVING/NOT MOVING, THRESHOLDS, INLIER COUNTING METHODS)
+
+\subsection{Computer}
+\label{subsec:implementation_details}
+
+%TODO: GIVE COMPUTER DESCRIPTION
+Testing was carried out on the target device - the robot's onboard laptop.
+Its characteristics are the following: Intel Core i5-11400H 2.70 {GHz}, GeForce RTX 3050Ti laptop, 16 Gb of RAM.
+Machine operated under Ubuntu 20.04.
+
+%TODO: DESCRIBE IOU CALCULATION
+
+\begin{figure}[!htb]
+    \centering
+    %\begin{subfigure}{0.48\textwidth}
+    %    \centering
+        \includegraphics[width=0.8\textwidth]{images/static_1_count_0.001_simple_iou_iter_plot_1_tomato.pdf}
+        \caption{IoU by the iterations number for a single tomato with the threshold of 0.001, averaged over all the point clouds with this tomato. It could be observed that the quality in terms of IoU reaches its limit faster than in terms of the volume error.}
+        \label{fig:static_1_count_0.001_IoU_RANSAC_Iteration}
+    %\end{subfigure}
+\end{figure}
+
+\begin{table}[ht]
+    \centering
+    \begin{tabular}{cccc}
+    \toprule
+    Iterations & IoU & Volume Error \\
+    \midrule
+    10 & 0.2125 & 0.5084 \\
+    100 & 0.2145 & 0.3587 \\
+    1000 & 0.2164 & 0.2459 \\
+    \bottomrule
+    \end{tabular}
+    \caption{IoU and Volume Error for different number of RANSAC iterations on real data}
+    \label{tab:iterations_table}
+    \end{table}
+
+\subsection{Experiments and results}
+\label{sec:results}
+
+%\subsection{Experiments}
+%\label{subsec:experiments}
+
+\begin{figure}[!htb]
+    \centering
+    %\begin{subfigure}{0.48\textwidth}
+    %    \centering
+        \includegraphics[width=0.8\textwidth]{images/polygon_count_0.001_pred_over_real_hist_plot_1_polygon.pdf}
+        \caption{Distribution of the predicted volume divided by the real volume for all the tomatoes in the real data. Despite the variance being considerable, the mean value is nearly 1.05, which means that the main metric that the potential user will be interested in, which is the volume estimation precision, is high.}
+        \label{fig:polygon_hist}
+    %\end{subfigure}
+\end{figure}
+
+%TODO: ADD TABLES WITH RESULTS FOR DATASETS, COUNTING METHODS, ITERATION NUMBER IN TERMS OF IOU, VOLUME ERROR, RUNNING TIME
+
+%TODO: ADD PLOT WITH THE DISTRIBUTION OF ERROR IN VOLUME FOR POLYGON DATA
+
+%TODO: ADD PLOTS FOR IOU AND VOLUME ERROR VERSUS ITERATION NUMBER
+
+% \begin{figure}[!htb]s
+%     \centering
+%     %\begin{subfigure}{0.48\textwidth}
+%     %    \centering
+%         \includegraphics[width=0.48\textwidth]{gfx/results/iou_inlier_polygon_count_0.001}
+%         \caption{iou inliers}
+ 
+%     %\end{subfigure}
+% \end{figure}
+
+%The first quality metric used was the intersection over union ($IoU$) between the manually marked tomatoes and the predicted ones.
+%The second one is the total relative volume error ($TotRelVolErr$) between the sum of the volumes of the predicted tomatoes and the real ones.
+
+% \begin{figure}[!htb]
+%     \centering
+%     %\begin{subfigure}{0.48\textwidth}
+%     %    \centering
+%         \includegraphics[width=0.48\textwidth]{gfx/results/govn.jpg}
+%         \caption{volume error inliers}
+  
+%     %\end{subfigure}
+% \end{figure}
+
+%PART TWO: CONVERGENCE
+
+\begin{landscape}
+\begin{table*}[!htb]
+    \centering
+    \begin{tabular}{lrrr|rrr}
+        \toprule
+        & \multicolumn{3}{c|}{Clean Models} & \multicolumn{3}{c}{Normal Noise} \\
+        \midrule
+         & IoU & Volume Error & Time & IoU & Volume Error & Time \\
+        \midrule
+        Bayfit & 0.0078 & 0.1164 & 1.5849 & 0.0104 & 2.88e+25 & 0.3709 \\
+        CAS & 1.0 & 0.0 & 0.0037 & 0.7202 & 0.164 & 0.0174 \\
+        Matlab Ellipsoid Fit & 1.0 & 0.0 & 0.0003 & 0.8024 & 0.0925 & 0.0003 \\
+        RANSAC (ours) & 1.0 & 0.0 & 0.0297 & 0.5101 & 1.17 & 0.0297 \\
+        \bottomrule
+    \end{tabular}
+    \caption{The comparison of the algorithms on clean and noisy full ellipsoids}
+    \label{tabularx:comp_clean_models}
+    \end{table*}
+
+    \begin{table*}[!htb]
+        \centering
+        \begin{tabular}{lrrr|rrr}
+            \toprule
+            & \multicolumn{3}{c|}{Segment Clean Models} & \multicolumn{3}{c}{Segment Normal Noise} \\
+            \midrule
+            & IoU & Volume Error & Time & IoU & Volume Error & Time \\
+            \midrule
+            Bayfit & 0.0005 & 0.3985 & 1.1149 & N/A & N/A & N/A \\
+            CAS & 0.9899 & 0.01 & 0.0027 & 0.2054 & 4.0796 & 0.0029 \\
+            Matlab Ellipsoid Fit & 0.8447 & 20.8465 & 0.0006 & 0.1387 & 0.426 & 0.0005 \\
+            RANSAC (ours) & 0.9697 & 0.0192 & 0.0287 & 0.1985 & 2.1242 & 0.0298 \\
+            \bottomrule
+        \end{tabular}
+        \caption{The comparison of the algorithms on Segment Clean data and Segment Normal Noise. N/A means that the algorithm did not provide a result}
+        \label{tabularx:comp_segment_models}
+        \end{table*}
+        
+        \begin{table}[!htb]
+        \centering
+        \begin{tabular}{lrrr}
+            \toprule
+            & \multicolumn{3}{c}{Real Data} \\ 
+            \midrule
+                & IoU & Volume Error & Time \\
+            \midrule
+            Bayfit & 0.0185 & 0.9629 & 0.0657 \\
+            CAS & 0.1501 & 18.3553 & 0.0037 \\
+            Matlab Ellipsoid Fit & 0.0003 & 7.1066 & 0.0010 \\
+            RANSAC (ours) & \textbf{0.2237} & \textbf{0.7617} & 0.0254 \\
+            \bottomrule
+        \end{tabular}
+        \caption{Real Data Results and Iterations}
+        \label{tabularx:real_data_results}
+        \end{table}
+            
+        \begin{table*}[!htb]
+            \centering
+            \begin{tabular}{lccccccccc}
+                \toprule
+                & Paper & Year  & Lang & Clean &  Noisy & Clean Segm & Noisy Segm & Real Data \\
+                \midrule
+                \href{https://github.com/zikai1/BayFit}{Bayfit} & \href{http://dx.doi.org/10.1109/TPAMI.2024.3432913}{link} & 2024   & Matlab & Yes & Yes & Yes & No & Yes \\
+                \href{https://github.com/marksemple/pyEllipsoid_Fit}{EllipsoidFit} & - & 2018   & Matlab/Python & Yes & Yes & Yes & Yes & Yes \\
+                \href{https://github.com/Mindyspm/CAS}{CAS} & \href{https://doi.org/10.48550/arXiv.2304.00517}{link} & 2022   & Matlab & Yes & Yes & Yes & Yes & Yes \\
+                Detection + RANSAC(ours) & - & 2024 & Python &  Yes & Yes & Yes & Yes & Yes \\
+                \bottomrule
+            \end{tabular}
+            \caption{Summary of the methods. Yes and No for different data types denote if the method is working with them or not}
+            \label{tabularx:methods_summary}
+        \end{table*}
+\end{landscape}
+
+First, let us observe the distribution of $IoU$ versus the inlier number, see Figure \ref{fig:iou_versus_iterations}.
+The trend here is considerably weaker than in the synthetic experiments.
+It could be connected with the distortions in the data that are not modeled properly by normal noise only.
+Each curve in the plot represents a single threshold.
+There is a variety of values that were chosen basing on the physical properties of the Intel RealSense camera.
+
+Second, let us observe the distribution of the volume error versus the inlier number, see Figure \ref{fig:verr_versus_iterations}.
+It could be noted that the volume error tends to decrease as the inlier number is increasing.
+
+Figure \ref{fig:static_1_simple_rel_vol_iter_plot_1_tomato} demonstrates the change in the relative volume error as the RANSAC iterations number grows.
+For certain threshold values the error is driven to nearly 0.4 at 1000 iterations.
+
+Figure \ref{fig:static_1_total_rel_vol_iter_plot} presents the same data, but for all the real tomatoes.
+One of the thresholds drives the error down to nearly 0.25 with 1000 iterations.
+
+It could be noted that IoU converges to its final value much faster, than the total volume error is decaying.
+This discrepancy could be interpreted as follows.
+While the IoU growth is inevitably limited by the quality of the manual markup, volume error on the other hand is decreasing as the models for the tomatoes are being adjusted.
+
+The metrics for different number of iterations for the best threshold are presented in the table \ref{tab:iterations_table}.
+
+Finally, let us compare the performance of the proposed method with the other algorithms, see Tables \ref{tabularx:comp_clean_models}, \ref{tabularx:comp_segment_models}, \ref{tabularx:real_data_results} and \ref{tabularx:methods_summary}.
+
+On some of the synthetic data the proposed method performs worse than the other methods, see Normal Noise IoU, where Matlab Ellipsoid Fit gives higher IoU.
+
+However, on the most challenging sort of data, which is the real ellipsoids, the proposed method shows superior performance in terms of both IoU and volume error.
+Moreover, it could be noted that the average volume for a group of tomatoes closely matches real values, despite high variance in individual outputs \ref{fig:polygon_hist}.
+
+% \subsection{Conclusion}
+% \label{sec:conclusion}
+
+%CASE STUDY WITH THE SAME ALG ON DIFFERENT DATA
+
+This work is focused on the development of a method of tangerine volume estimation based on the point cloud data.
+While monocular vision-based methods are often easier to implement and deploy in real world both in terms of algorithms and the sensors required, depth data is necessary to obtain precise volume estimate.
+In this work tangerines are approximated by ellipsoids, that are fitted to the point clouds in 3D.
+A dataset of real tangerines was collected and marked.
+For each tangerine the mass and volume were measured.
+RANdom SAmple Consensus (RANSAC) was used for the ellipsoid identification.
+A number of experiments were conducted with varying algorithm hyperparameters, including iteration number and the inlier threshold value.
+The output quality was assessed via comparing the prediction of the method with the real volume of the fruit.
+Experimental results suggest that the good enough performance could be achieved in real time with a portable computer.
+
+%tangerines ransac
+
+% The contributions of this paper are as follows.
+% \begin{itemize}
+%     \item A dataset of point clouds with tangerines was collected in the environment mimicking the conveyor belt.
+%     \item Dataset markup was performed, meaning the measurement of the volume of all the tangerines.
+%     \item Numerical experiments were conducted with a self-contained Python implementation of RANSAC for ellipsoids.
+%     \item The results of the experiments were evaluated in terms of the volume error.
+%     \item The hyperparameters giving the best performance were identified.
+%     %\item A pipeline consisting of YOLO \cite{redmon2016} detection with subsequent point cloud cropping and RANSAC inference was realized.
+% \end{itemize}
+
+It was shown that good enough performance could be achieved with the means of a user-grade active stereo camera and a modern laptop.
+
+%\subsection{Experimental Setup}
+
+\subsection{Algorithm Description}
+
+The input of the method is a number of three-dimensional points.
+The output of the algorithm is the volume of the tangerine.
+
+Before the algorithm is applied, the data is collected and processed.
+The full volume estimation pipeline is as follows.
+
+\begin{itemize}
+    \item An RGB image and a point cloud are taken with an Intel RealSense D453i camera.
+    \item The tangerines are detected and segmented on the RGB image by the means of the color-based filtering.
+    \item For each of the tangerines a corresponding point cloud is cropped.
+    \item The obtained points are fed into the ellipsoid recognition algorithm.
+    \item The volume of the tangerine is evaluated using the semiaxes of the ellipsoid.
+\end{itemize}
+
+\subsection{Results}
+
+The experiment results are presented below.
+Since the main quality metric is precision of volume estimation, the average volume error was evaluated.
+
+Fig. \ref{fig_all} presents the values of the total volume error that was measured for all the tangerines, meaning that the total volume was compared with the ground true total volume, depending on the number or RANSAC iterations.
+A number of thresholds was considered.
+If the threshold value is too small, the output quality degrades as the number is the iterations grow, since the algorithm converges to fitting noisy artifacts present in the data.
+With more reasonable threshold values the average volume error drops to nearly 0.1 over almost 200 iterations, making it possible to rapidly evaluate the volume of the tangerines.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=0.8\textwidth]{images/all_volume-1.png}}
+\caption{The dependence of the total volume error on the number of RANSAC algorithm iterations with different inlier threshold values. The best performance is achieved with the threshold values 0.001 and 0.00075.}
+\label{fig_all}
+\end{figure}
+
+Fig. \ref{fig_avg} presents the values of the average volume error tangerine-wise, depending on the number or RANSAC iterations.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=0.8\textwidth]{images/avg_tanj-1.png}}
+\caption[RANSAC volume error for different thresholds]{The dependence of the average volume error on the number of RANSAC algorithm iterations with different inlier threshold values.}
+\label{fig_avg}
+\end{figure}
+
+The numerical results across different iteration numbers and threshold values are presented in the tables \ref{tab1} for total error and \ref{tab2} for average error.
+
+\begin{table}[htbp]
+\caption{Total Volume Error for different iterations number across a number of thresholds.}
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+\multicolumn{1}{|c|}{\textbf{Iterations}} & \multicolumn{5}{c|}{\textbf{Threshold}} \\
+\cline{2-6} 
+ & \textbf{0.0001} & \textbf{0.0005} & \textbf{0.00025} & \textbf{0.00075} & \textbf{0.001} \\
+\hline
+10 & 0.3543 & 0.4482 & 0.5301 & 0.3227 & 0.4382 \\
+100 & 0.4136 & 0.2908 & 0.2942 & 0.2860 & 0.2968 \\
+1000 & 0.5078 & 0.2371 & 0.3265 & 0.2967 & 0.3328 \\
+\hline
+\end{tabular}
+\label{tab1}
+\end{table}
+
+\begin{table}[htbp]
+\caption{Average Volume Error for different iteration number across a number of thresholds.}
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+\multicolumn{1}{|c|}{\textbf{Iterations}} & \multicolumn{5}{c|}{\textbf{Threshold}} \\
+\cline{2-6} 
+ & \textbf{0.0001} & \textbf{0.0005} & \textbf{0.00025} & \textbf{0.00075} & \textbf{0.001} \\
+\hline
+10 & 0.7013 & 0.8693 & 0.9357 & 0.6617 & 0.8053 \\
+100 & 0.4009 & 0.2301 & 0.3252 & 0.0939 & 0.1649 \\
+1000 & 0.5169 & 0.1644 & 0.3262 & 0.1688 & 0.1468 \\
+\hline
+\end{tabular}
+\label{tab2}
+\end{table}
+
+%\subsection{Conclusion}
+
+%\section*{References}
+%%\bibliographystyle{ieeetr}  
+% \begin{thebibliography}{12}
+
+% %%%%
+% \bibitem{li2025metafruit} J. Li, K. Lammers, X. Yin, X. Yin, L. He, J. Sheng, R. Lu, and Z. Li,  
+% "MetaFruit meets foundation models: Leveraging a comprehensive multi-fruit dataset for advancing agricultural foundation models,"  
+% \textit{Computers and Electronics in Agriculture}, vol. 231, p. 109908, 2025.
+
+% \bibitem{mansuri2022computer} S. M. Mansuri, P. V. Gautam, D. Jain, N. C., \textit{et al.},  
+% "Computer vision model for estimating the mass and volume of freshly harvested Thai apple ber (\textit{Ziziphus mauritiana L.}) and its variation with storage days,"  
+% \textit{Scientia Horticulturae}, vol. 305, p. 111436, 2022.
+
+% \bibitem{huynh2022vision} T. T. M. Huynh, L. TonThat, and S. V. T. Dao,  
+% "A vision-based method to estimate volume and mass of fruit/vegetable: Case study of sweet potato,"  
+% \textit{International Journal of Food Properties}, vol. 25, no. 1, pp. 717--732, 2022.
+
+% \bibitem{jana2020novo} S. Jana, R. Parekh, and B. Sarkar,  
+% "A De novo approach for automatic volume and mass estimation of fruits and vegetables,"  
+% \textit{Optik}, vol. 200, p. 163443, 2020.
+
+
+% \bibitem{khojastehnazhand2008determination}  
+% M. Khojastehnazhand, M. Omid, and A. Tabatabaeefar,  
+% "Determination of tangerine volume using image processing,"  
+% \textit{Tarım Makinaları Bilimi Dergisi}, vol. 4, no. 4, pp. 407--412, 2008.  
+
+% \bibitem{khojastehnazhand2010determination}  
+% M. Khojastehnazhand, M. Omid, and A. Tabatabaeefar,  
+% "Determination of tangerine volume using image processing methods,"  
+% \textit{International Journal of Food Properties}, vol. 13, no. 4, pp. 760--770, 2010.  
+
+
+% \bibitem{omid2010estimating} M. Omid, M. Khojastehnazhand, and A. Tabatabaeefar,  
+% "Estimating volume and mass of citrus fruits by image processing technique,"  
+% \textit{Journal of Food Engineering}, vol. 100, no. 2, pp. 315--321, 2010.
+
+% \bibitem{ling2024divespot} Y. Ling, R. Zhao, Y. Shen, D. Li, J. Jin, and J. Liu,  
+% "DIVESPOT: Depth Integrated Volume Estimation of Pile of Things Based on Point Cloud,"  
+% \textit{arXiv preprint arXiv:2407.05415}, 2024.
+
+% \bibitem{fischler1981} M. Fischler and R. Bolles, "Random sample consensus: A paradigm for model fitting with applications to image analysis and automated cartography," \textit{Commun. ACM}, 1981.
+
+% \bibitem{hough1962method} P. V. C. Hough,  
+% "Method and means for recognizing complex patterns,"  
+% US Patent 3,069,654, Dec. 18, 1962.
+
+% \bibitem{han2023} M. Han, J. Kan, G. Yang, and X. Li, "Robust ellipsoid fitting using combination of axial and Sampson distances," \textit{IEEE Trans. Instrum. Meas.}, 2023.
+
+% \bibitem{nyalala2019} I. Nyalala, C. Okinda, L. Nyalala, N. Makange, Q. Chao, L. Chao, K. Yousaf, and K. Chen, "Tomato volume and mass estimation using computer vision and machine learning algorithms: Cherry tomato model," \textit{Journal of Food Engineering}, 2019.
+
+%\bibitem{rodriguez2008} E. Rodriguez, D. Skarecky, N. Narula, and T. E. Ahlering, "Prostate volume estimation using the ellipsoid formula consistently underestimates actual gland size," \textit{The Journal of Urology}, vol. 179, no. 2, pp. 501--503, 2008.
+
+%\bibitem{yu2009} J. Yu, H. Zheng, S. R. Kulkarni, and H. V. Poor, "Outlier elimination for robust ellipse and ellipsoid fitting," in \textit{Proc. IEEE Int. Workshop Comput. Adv. Multi-Sensor Adapt. Process. (CAMSAP)}, 2009, pp. 33--36.
+
+%\bibitem{ghahremani2021} M. Ghahremani, K. Williams, F. Corke, B. Tiddeman, Y. Liu, X. Wang, and J. H. Doonan, "Direct and accurate feature extraction from 3D point clouds of plants using RANSAC," \textit{Computers and Electronics in Agriculture}, vol. 187, p. 106240, Aug. 2021.
+
+%\bibitem{redmon2016} J. Redmon \textit{et al.}, "You only look once: Unified, real-time object detection," in \textit{Proc. IEEE Conf. Comput. Vis. Pattern Recognit. (CVPR)}, 2016, pp. 779--788.
+
+\section{Neural Network-based Volume Estimation}
+
+The contributions of this paper are as follows.
+\begin{itemize}
+    \item A dataset of point clouds with tangerines was collected in the environment mimicking the conveyor belt.
+    \item Dataset markup was performed, meaning the measurement of the volume of all the tangerines.
+    \item Numerical experiments were conducted with a PointNet++-like neural network on ellipsoids.
+    \item The results of the experiments were evaluated in terms of the volume error.
+\end{itemize}
+
+Fig. \ref{fig:wood_data} presents a point cloud from the dataset, captured by Intel RealSense D435i.
+ 
+\subsection{Algorithm Description}
+
+The input of the method is a number of three-dimensional points.
+The output of the algorithm is the volume of the tangerine.
+Before the algorithm is applied, the data is collected and processed.
+The full volume estimation pipeline is as follows.
+
+\begin{itemize}
+    \item An RGB image and a point cloud are taken with an Intel RealSense D453i camera.
+    \item The tangerines are detected and segmented on the RGB image with the color-based filtering.
+    \item For each of the tangerines a corresponding point cloud is cropped.
+    \item The obtained points are fed into the neural network.
+\end{itemize}
+
+\subsection{Neural Network Architecture and Training}
+
+The neural network encompasses 393025 parameters. All the point clouds in the dataset containing 30 tangerines were split into 7980 for training and 3990 for test.
+
+Fig. \ref{diagram} presents the architecture of the neural network, closely following PointNet++ \cite{qi2017pointnet}.
+It consists of the following parts.
+First, a number of spatial processing sections are appiled.
+The spatial processing section is a crucial part of this architecture.
+It subsamples a number of points from the neighborhood of each point, conserving local distibution of the points.
+After that, the points are grouped and a vector representation for them is obtained via multilayer perceptron, followed by max pooling.
+After three spatial processing sections global max pooling is performed.
+Finally, a series of fully connected layers are used.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=0.7\textwidth]{images/jopa.png}}
+\caption{The architecture of the neural network used in the work.}
+\label{diagram}
+\end{figure}
+
+\subsection{Results}
+
+The training took 89.5 minutes on a computer with processor Intel Core i5-13400 (13th Gen, 10C/16T, 2.5 GHz), 32 Gb of RAM DDR5 and graphics card NVIDIA GeForce RTX 4070 (12 GB GDDR6X).
+The inference time on a single point cloud is 290 milliseconds.
+
+The results are presented below.
+Since the main quality metric is precision of volume estimation, the average volume error was evaluated.
+
+Fig \ref{fig_train_loss} presents the values of the loss function as the training progresses.
+It could be noted that after epoch 30 the decline stagnated, meaning that the generalization capabilities of the model and the quality of the data do not allow for the further improvements.
+Fig. \ref{error_volume} presents the dependence of the average volume of the number of epochs of training.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=0.7\textwidth]{images/train_loss.pdf}}
+\caption{Loss function during the training.}
+\label{fig_train_loss}
+\end{figure}
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=0.7\textwidth]{images/rv_error.pdf}}
+\caption{Relative Volume Error during the training.}
+\label{error_volume}
+\end{figure}
+
+The main result of the presented work is the following.
+After the training the Mean Relative Volume Error on the real point cloud data with tangerines from the test set reached 0.1070.
+Overall, the performance meets the demands of the market in terms of the quality of volume estimation and inference time on a modern laptop.
+The sensor used is a user-grade active stereo camera.
+
+%\section{Conclusion}
+
+% \begin{thebibliography}{10}
+% \bibitem{li2025metafruit}  
+% J. Li, K. Lammers, X. Yin, X. Yin, L. He, J. Sheng, R. Lu, and Z. Li,  
+% "MetaFruit meets foundation models: Leveraging a comprehensive multi-fruit dataset for advancing agricultural foundation models,"  
+% \textit{Computers and Electronics in Agriculture}, vol. 231, p. 109908, 2025.  
+
+% \bibitem{hough1962method} P. V. C. Hough,  
+% "Method and means for recognizing complex patterns,"  
+% US Patent 3,069,654, Dec. 18, 1962.
+
+% \bibitem{redmon2016you}  
+% J. Redmon, S. Divvala, R. Girshick, and A. Farhadi,  
+% "You only look once: Unified, real-time object detection,"  
+% in \textit{Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition}, pp. 779--788, 2016.  
+
+% \bibitem{nyalala2019} I. Nyalala, C. Okinda, L. Nyalala, N. Makange, Q. Chao, L. Chao, K. Yousaf, and K. Chen, "Tomato volume and mass estimation using computer vision and machine learning algorithms: Cherry tomato model," \textit{Journal of Food Engineering}, 2019.
+
+% \bibitem{ghahremani2021} M. Ghahremani, K. Williams, F. Corke, B. Tiddeman, Y. Liu, X. Wang, and J. H. Doonan, "Direct and accurate feature extraction from 3D point clouds of plants using RANSAC," \textit{Computers and Electronics in Agriculture}, vol. 187, p. 106240, Aug. 2021.
+
+% \bibitem{fischler1981} M. Fischler and R. Bolles, "Random sample consensus: A paradigm for model fitting with applications to image analysis and automated cartography," \textit{Commun. ACM}, 1981.
+
+% \bibitem{han2023} M. Han, J. Kan, G. Yang, and X. Li, "Robust ellipsoid fitting using combination of axial and Sampson distances," \textit{IEEE Trans. Instrum. Meas.}, 2023.
+
+% \bibitem{qi2017pointnet}  
+% C. R. Qi, H. Su, K. Mo, and L. J. Guibas,  
+% "PointNet: Deep learning on point sets for 3D classification and segmentation,"  
+% in \textit{Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition}, pp. 652--660, 2017.  
+
+% \bibitem{thomas2019kpconv}  
+% H. Thomas, C. R. Qi, J.-E. Deschaud, B. Marcotegui, F. Goulette, and L. J. Guibas,  
+% "KPConv: Flexible and deformable convolution for point clouds,"  
+% in \textit{Proceedings of the IEEE/CVF International Conference on Computer Vision}, pp. 6411--6420, 2019.  
+
+% \bibitem{qi2017pointnet++}  
+% C. R. Qi, L. Yi, H. Su, and L. J. Guibas,  
+% "PointNet++: Deep hierarchical feature learning on point sets in a metric space,"  
+% \textit{Advances in Neural Information Processing Systems}, vol. 30, 2017.  
+
+% \end{thebibliography}
+
+%\end{description}
+
